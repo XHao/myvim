@@ -1,4 +1,4 @@
-source .vimrc_keymap
+source ~/.vimrc_keymap
 
 set nu
 colorscheme molokai 
@@ -36,6 +36,7 @@ Plugin 'plasticboy/vim-markdown'
 Plugin 'majutsushi/tagbar'
 Plugin 'jelera/vim-javascript-syntax'
 Plugin 'ternjs/tern_for_vim', {'do': 'npm install'}
+Plugin 'artur-shaik/vim-javacomplete2'
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 
