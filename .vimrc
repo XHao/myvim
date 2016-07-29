@@ -25,7 +25,7 @@ filetype off
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
 " let Vundle manage Vundle, required
-Plugin 'gmarik/Vundle.vim'
+Plugin 'VundleVim/Vundle.vim'
 Plugin 'fatih/vim-go'
 Plugin 'Valloric/YouCompleteMe'
 Plugin 'SirVer/ultisnips'
@@ -44,6 +44,7 @@ Plugin 'artur-shaik/vim-javacomplete2'
 call vundle#end()            " required
 
 filetype plugin indent on    " required
+
 syntax on
 
 au FileType javascript call JavaScriptFold()
