@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+git submodule init
+
+git submodule update
+
 echo "copy color theme..."
 cp ~/.vim/molokai/colors/molokai.vim ~/.vim/colors/molokai.vim
 
