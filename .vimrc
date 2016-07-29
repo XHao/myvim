@@ -2,7 +2,10 @@ source ~/.vimrc_keymap
 
 set nu
 colorscheme molokai 
+" hight line and column
 set cursorline
+set cursorcolumn
+
 set shiftwidth=4
 set tabstop=4
 set expandtab

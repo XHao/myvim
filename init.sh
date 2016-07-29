@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+echo "copy color theme..."
+cp ~/.vim/molokai/colors/molokai.vim ~/.vim/colors/molokai.vim
+
 echo "backup origin vimrc..."
 if [ -f "$HOME/.vimrc" ]; then
     mv ~/.vimrc ~/.vimrc.`date +%Y%m%d`
