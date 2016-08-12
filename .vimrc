@@ -34,8 +34,10 @@ Plugin 'node'
 Plugin 'scrooloose/nerdtree'
 Plugin 'Xuyuanp/nerdtree-git-plugin'
 Plugin 'justmao945/vim-clang'
+" markdown https://github.com/plasticboy/vim-markdown
 Plugin 'godlygeek/tabular'
 Plugin 'plasticboy/vim-markdown'
+
 Plugin 'majutsushi/tagbar'
 Plugin 'jelera/vim-javascript-syntax'
 Plugin 'ternjs/tern_for_vim', {'do': 'npm install'}
@@ -49,6 +51,8 @@ syntax on
 
 au FileType javascript call JavaScriptFold()
 
+autocmd FileType java setlocal omnifunc=javacomplete#Complete
+
 " airline config
 set laststatus=2
 let g:airline#extensions#tabline#enabled = 1
@@ -59,6 +63,10 @@ let g:airline#extensions#tabline#left_alt_sep = '|'
 " markdown config
 let g:vim_markdown_folding_disabled=1
 let g:vim_markdown_frontmatter=1
+let g:vim_markdown_json_frontmatter = 1
+let g:vim_markdown_toc_autofit = 1
+let g:vim_markdown_fenced_languages = ['java=java', 'c++=cpp', 'viml=vim', 'bash=sh', 'ini=dosini']
+let g:vim_markdown_new_list_item_indent = 2
 
 " https://github.com/justmao945/vim-clang
 let g:clang_c_options = '-std=gnu11'
