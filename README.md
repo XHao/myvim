@@ -25,4 +25,4 @@ cd ~/.vim/bundle/YouCompleteMe
 ./install.py --all
 ```
 
-
+*tips*:如果想要直接启用参数`--all`，必须确保`xbuild, go, tsserver, node, npm, rustc, and cargo tools are installed and in your PATH`,否则只能根据你需要的语言插件进行编译
