@@ -38,6 +38,7 @@ Plugin 'justmao945/vim-clang'
 " markdown https://github.com/plasticboy/vim-markdown
 Plugin 'godlygeek/tabular'
 Plugin 'plasticboy/vim-markdown'
+Plugin 'suan/vim-instant-markdown'
 
 Plugin 'majutsushi/tagbar'
 Plugin 'jelera/vim-javascript-syntax'
@@ -68,6 +69,8 @@ let g:vim_markdown_json_frontmatter = 1
 let g:vim_markdown_toc_autofit = 1
 let g:vim_markdown_fenced_languages = ['java=java', 'c++=cpp', 'viml=vim', 'bash=sh', 'ini=dosini']
 let g:vim_markdown_new_list_item_indent = 2
+
+let g:instant_markdown_slow = 1
 
 " https://github.com/justmao945/vim-clang
 let g:clang_c_options = '-std=gnu11'
