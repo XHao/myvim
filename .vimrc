@@ -17,6 +17,7 @@ set foldcolumn=0
 set backspace=indent,eol,start
 setlocal foldlevel=1
 set mouse=a
+set ic
 
 " vundle
 set nocompatible

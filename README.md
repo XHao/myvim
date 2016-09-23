@@ -8,7 +8,7 @@ this is the vim configuration
 
 ### clone myvim repository
 
-* `git clone git@github.com:XHao/myvim.git ~/.vim`
+* `git clone https://github.com/XHao/myvim.git ~/.vim`
 * `cd ~/.vim`
 * `sh init.sh`
 
