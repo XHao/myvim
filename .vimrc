@@ -1,5 +1,3 @@
-source ~/.vimrc_keymap
-
 set nu
 colorscheme molokai 
 " hight line and column
@@ -35,7 +33,6 @@ Plugin 'vim-airline'
 Plugin 'node'
 Plugin 'scrooloose/nerdtree'
 Plugin 'Xuyuanp/nerdtree-git-plugin'
-Plugin 'justmao945/vim-clang'
 " markdown https://github.com/plasticboy/vim-markdown
 Plugin 'godlygeek/tabular'
 Plugin 'plasticboy/vim-markdown'
@@ -48,7 +45,7 @@ Plugin 'artur-shaik/vim-javacomplete2'
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 
-filetype plugin indent on    " required
+filetype plugin indent on  
 
 syntax on
 
@@ -110,3 +107,41 @@ let g:go_highlight_build_constraints = 1
 let g:go_fmt_command = "goimports"
 let g:go_fmt_fail_silently = 1
 let g:go_play_open_browser = 0
+
+let g:ycm_global_ycm_extra_conf = '~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp/ycm/.ycm_extra_conf.py'
+
+" common nmap
+nnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
+nmap <C-t> :TagbarToggle<CR>
+nmap <C-n> :NERDTreeToggle<CR>
+" imap
+inoremap ( ()<LEFT>
+inoremap [ []<LEFT>
+inoremap { {}<LEFT>
+
+inoremap ) <c-r>=ClosePair(')')<CR>
+inoremap ] <c-r>=ClosePair(']')<CR>
+inoremap } <c-r>=ClosePair('}')<CR>
+
+inoremap " <c-r>=QuoteDelim('"')<CR>
+inoremap ' <c-r>=QuoteDelim("'")<CR>
+
+function ClosePair(char)
+	if getline('.')[col('.') - 1] == a:char
+		return "\<Right>"
+	else
+		return a:char
+	endif
+endf
+
+function QuoteDelim(char)
+	let line = getline('.')
+	let col = col('.')
+	if line[col - 2] == "\\"
+		return a:char
+	elseif line[col - 1] == a:char
+		return "\<Right>"
+	else
+		return a:char.a:char."\<LEFT>"
+	endif
+endf

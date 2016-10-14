@@ -15,12 +15,13 @@ fi
 echo "create new vimrc..."
 ln -s ~/.vim/.vimrc ~/.vimrc
 
-
-if [ -f "$HOME/.vimrc_keymap" ]; then
-    mv ~/.vimrc_keymap ~/.vimrc_keymap.`date +%Y%m%d`
-fi
-ln -s ~/.vim/.vimrc_keymap ~/.vimrc_keymap
-
 vi +PluginInstall! +qall
+
+echo "download c-support plugin"
+if [ ! -f "c-support.zip" ]; then
+    curl -o c-support.zip http://www.vim.org/scripts/download_script.php?src_id=24474
+    unzip -o c-support.zip
+fi
+
 
 #end of file

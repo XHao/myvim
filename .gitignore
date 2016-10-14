@@ -3,3 +3,12 @@ bundle/*
 */.DS_Store
 *.bak
 *.bk
+ftdetect/
+doc/
+ftplugin/
+plugin/
+syntax/
+c-support/
+autoload/
+c-support.zip
+templates/
