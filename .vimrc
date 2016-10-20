@@ -3,7 +3,6 @@ colorscheme molokai
 " hight line and column
 set cursorline
 set cursorcolumn
-
 set shiftwidth=4
 set tabstop=4
 set expandtab
@@ -15,7 +14,9 @@ set foldcolumn=0
 set backspace=indent,eol,start
 setlocal foldlevel=1
 set mouse=a
-set ic
+set ignorecase
+set incsearch
+set wildmenu
 
 " vundle
 set nocompatible
@@ -37,16 +38,18 @@ Plugin 'Xuyuanp/nerdtree-git-plugin'
 Plugin 'godlygeek/tabular'
 Plugin 'plasticboy/vim-markdown'
 Plugin 'suan/vim-instant-markdown'
-
 Plugin 'majutsushi/tagbar'
 Plugin 'jelera/vim-javascript-syntax'
 Plugin 'ternjs/tern_for_vim', {'do': 'npm install'}
 Plugin 'artur-shaik/vim-javacomplete2'
+" c++ syntax
+Plugin 'octol/vim-cpp-enhanced-highlight'
+Plugin 'nathanaelkane/vim-indent-guides'
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
+filetype plugin indent on
 
-filetype plugin indent on  
-
+syntax enable
 syntax on
 
 au FileType javascript call JavaScriptFold()
@@ -108,7 +111,14 @@ let g:go_fmt_command = "goimports"
 let g:go_fmt_fail_silently = 1
 let g:go_play_open_browser = 0
 
+" youcompleteme
 let g:ycm_global_ycm_extra_conf = '~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp/ycm/.ycm_extra_conf.py'
+
+" vim intent 
+let g:indent_guides_enable_on_vim_startup=1
+let g:indent_guides_start_level=2
+let g:indent_guides_guide_size=1
+
 
 " common nmap
 nnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
