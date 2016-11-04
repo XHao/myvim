@@ -26,9 +26,12 @@ set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
 " let Vundle manage Vundle, required
 Plugin 'VundleVim/Vundle.vim'
-Plugin 'fatih/vim-go'
+" youcompleteMe
 Plugin 'Valloric/YouCompleteMe'
 Plugin 'rdnetto/YCM-Generator'
+" go plugin
+Plugin 'fatih/vim-go'
+
 Plugin 'SirVer/ultisnips'
 Plugin 'vim-airline'
 Plugin 'node'
@@ -41,10 +44,12 @@ Plugin 'suan/vim-instant-markdown'
 Plugin 'majutsushi/tagbar'
 Plugin 'jelera/vim-javascript-syntax'
 Plugin 'ternjs/tern_for_vim', {'do': 'npm install'}
-Plugin 'artur-shaik/vim-javacomplete2'
+" slow and take more cpu
+" Plugin 'artur-shaik/vim-javacomplete2'
 " c++ syntax
 Plugin 'octol/vim-cpp-enhanced-highlight'
 Plugin 'nathanaelkane/vim-indent-guides'
+Plugin 'derekwyatt/vim-fswitch'
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 filetype plugin indent on
@@ -54,7 +59,7 @@ syntax on
 
 au FileType javascript call JavaScriptFold()
 
-autocmd FileType java setlocal omnifunc=javacomplete#Complete
+"autocmd FileType java setlocal omnifunc=javacomplete#Complete
 
 " airline config
 set laststatus=2
@@ -70,7 +75,6 @@ let g:vim_markdown_json_frontmatter = 1
 let g:vim_markdown_toc_autofit = 1
 let g:vim_markdown_fenced_languages = ['java=java', 'c++=cpp', 'viml=vim', 'bash=sh', 'ini=dosini']
 let g:vim_markdown_new_list_item_indent = 2
-
 let g:instant_markdown_slow = 1
 
 " https://github.com/justmao945/vim-clang
@@ -112,7 +116,13 @@ let g:go_fmt_fail_silently = 1
 let g:go_play_open_browser = 0
 
 " youcompleteme
-let g:ycm_global_ycm_extra_conf = '~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp/ycm/.ycm_extra_conf.py'
+"let g:ycm_global_ycm_extra_conf = '~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp/ycm/.ycm_extra_conf.py'
+let g:ycm_confirm_extra_conf = 0
+"let g:ycm_extra_conf_globlist = ['.','~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp/ycm/.ycm_extra_conf.py']
+nnoremap <leader>jc :YcmCompleter GoToDeclaration<CR>
+nnoremap <leader>jd :YcmCompleter GoToDefinition<CR>
+nnoremap <leader>ji :YcmCompleter GoToInclude<CR>
+let g:ycm_goto_buffer_command = 'vertical-split'
 
 " vim intent 
 let g:indent_guides_enable_on_vim_startup=1
@@ -155,3 +165,6 @@ function QuoteDelim(char)
 		return a:char.a:char."\<LEFT>"
 	endif
 endf
+
+" .cpp <-> .h, plugin vim-fswitch
+nmap <silent> <Leader>swi :FSHere<cr>
