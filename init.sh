@@ -25,6 +25,4 @@ else
     echo "has c-support.zip in dir"
 fi
 
-mkdir -p ~/.vim/bundle/ultisnips/mysnippets
-ln -s ~/.vim/mysnippets/cpp.snippets ~/.vim/bundle/ultisnips/mysnippets/cpp.snippets
 #end of file
