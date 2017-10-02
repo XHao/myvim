@@ -56,6 +56,9 @@ Plugin 'derekwyatt/vim-fswitch'
 Plugin 'vim-scripts/indexer.tar.gz'
 Plugin 'vim-scripts/DfrankUtil'
 Plugin 'vim-scripts/vimprj'
+" rustc
+Plugin 'rust-lang/rust.vim'
+Plugin 'racer-rust/vim-racer'
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 filetype plugin indent on
@@ -122,9 +125,6 @@ let g:go_fmt_fail_silently = 1
 let g:go_play_open_browser = 0
 
 "YCM
-nnoremap <leader>jc :YcmCompleter GoToDeclaration<CR>
-nnoremap <leader>jd :YcmCompleter GoToDefinition<CR>
-nnoremap <leader>ji :YcmCompleter GoToInclude<CR>
 let g:ycm_global_ycm_extra_conf = '~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp/ycm/.ycm_extra_conf.py' 
 let g:ycm_goto_buffer_command = 'vertical-split'
 " 补全功能在注释中同样有效
@@ -160,7 +160,7 @@ let g:UltiSnipsSnippetDirectories=["mysnippets"]
 " If you want :UltiSnipsEdit to split your window.
 let g:UltiSnipsEditSplit="vertical"
 " 设置 tagbar 子窗口的位置出现在主编辑区的左边 
-let tagbar_left=1 
+" let tagbar_left=1 
 " 设置标签子窗口的宽度 
 let tagbar_width=32 
 " tagbar 子窗口中不显示冗余帮助信息 
@@ -200,6 +200,14 @@ let g:tagbar_type_cpp = {
             \ }
             \ }
 
+" rust format
+let g:rustfmt_autosave = 1
+
+" racer 
+set hidden
+let g:racer_cmd = "/Users/xiehao/.cargo/bin/racer"
+let g:racer_experimental_completer = 1
+
 " common nmap
 nnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
 nmap <C-t> :TagbarToggle<CR>
@@ -236,5 +244,14 @@ function QuoteDelim(char)
     endif
 endf
 
+nnoremap <leader>jc :YcmCompleter GoToDeclaration<CR>
+nnoremap <leader>jd :YcmCompleter GoToDefinition<CR>
+nnoremap <leader>ji :YcmCompleter GoToInclude<CR>
+
 " .cpp <-> .h, plugin vim-fswitch
 nmap <silent> <Leader>swi :FSHere<cr>
+
+au FileType rust nmap gd <Plug>(rust-def)
+au FileType rust nmap gs <Plug>(rust-def-split)
+au FileType rust nmap gx <Plug>(rust-def-vertical)
+au FileType rust nmap <leader>gd <Plug>(rust-doc)
