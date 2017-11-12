@@ -59,8 +59,23 @@ Plugin 'vim-scripts/vimprj'
 " rustc
 Plugin 'rust-lang/rust.vim'
 Plugin 'racer-rust/vim-racer'
+" Add maktaba and codefmt to the runtimepath.
+" (The latter must be installed before it can be used.)
+Plugin 'google/vim-maktaba'
+Plugin 'google/vim-codefmt'
+" Also add Glaive, which is used to configure codefmt's maktaba flags. See
+" `:help :Glaive` for usage.
+Plugin 'google/vim-glaive'
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
+
+" the glaive#Install() should go after the call vundle#end()
+call glaive#Install()
+
+augroup autoformat_settings
+  autocmd FileType c,cpp,proto,javascript AutoFormatBuffer clang-format
+augroup END
+
 filetype plugin indent on
 
 syntax enable
