@@ -47,7 +47,7 @@ Plugin 'majutsushi/tagbar'
 Plugin 'jelera/vim-javascript-syntax'
 Plugin 'ternjs/tern_for_vim', {'do': 'npm install'}
 " slow and take more cpu
-" Plugin 'artur-shaik/vim-javacomplete2'
+Plugin 'artur-shaik/vim-javacomplete2'
 " c++ syntax
 Plugin 'octol/vim-cpp-enhanced-highlight'
 Plugin 'nathanaelkane/vim-indent-guides'
@@ -66,6 +66,9 @@ Plugin 'google/vim-codefmt'
 " Also add Glaive, which is used to configure codefmt's maktaba flags. See
 " `:help :Glaive` for usage.
 Plugin 'google/vim-glaive'
+" format
+Plugin 'vim-clang-format'
+Plugin 'vim-operator-user'
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 
