@@ -66,9 +66,6 @@ Plugin 'google/vim-codefmt'
 " Also add Glaive, which is used to configure codefmt's maktaba flags. See
 " `:help :Glaive` for usage.
 Plugin 'google/vim-glaive'
-" format
-Plugin 'vim-clang-format'
-Plugin 'vim-operator-user'
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 
