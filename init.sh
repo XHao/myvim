@@ -19,7 +19,7 @@ vi +PluginInstall! +qall
 
 if [ ! -f "~/c-support.zip" ]; then
     echo "download c-support plugin"
-    curl -o c-support.zip http://www.vim.org/scripts/download_script.php?src_id=24474
+    wget -O c-support.zip http://www.vim.org/scripts/download_script.php?src_id=24474
     unzip -o c-support.zip
 else
     echo "has c-support.zip in dir"
