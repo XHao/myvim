@@ -18,19 +18,23 @@ set ignorecase
 set incsearch
 set wildmenu
 
-" vundle
-set nocompatible
-filetype off
+
+set nocompatible              " be iMproved, required
+filetype off                  " required
+
 " set the runtime path to include Vundle and initialize
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
+" alternatively, pass a path where Vundle should install plugins
+"call vundle#begin('~/some/path/here')
+
 " let Vundle manage Vundle, required
 Plugin 'VundleVim/Vundle.vim'
-" youcompleteMe
+
+" ycm
 Plugin 'Valloric/YouCompleteMe'
 Plugin 'rdnetto/YCM-Generator'
-" go plugin
-Plugin 'fatih/vim-go'
+
 " clang
 Plugin 'SirVer/ultisnips'
 Plugin 'honza/vim-snippets'
@@ -39,13 +43,13 @@ Plugin 'vim-airline'
 Plugin 'node'
 Plugin 'scrooloose/nerdtree'
 Plugin 'Xuyuanp/nerdtree-git-plugin'
-" markdown https://github.com/plasticboy/vim-markdown
 Plugin 'godlygeek/tabular'
 Plugin 'plasticboy/vim-markdown'
 Plugin 'suan/vim-instant-markdown'
 Plugin 'majutsushi/tagbar'
 Plugin 'jelera/vim-javascript-syntax'
 Plugin 'ternjs/tern_for_vim', {'do': 'npm install'}
+
 " slow and take more cpu
 Plugin 'artur-shaik/vim-javacomplete2'
 " c++ syntax
@@ -56,9 +60,6 @@ Plugin 'derekwyatt/vim-fswitch'
 Plugin 'vim-scripts/indexer.tar.gz'
 Plugin 'vim-scripts/DfrankUtil'
 Plugin 'vim-scripts/vimprj'
-" rustc
-Plugin 'rust-lang/rust.vim'
-Plugin 'racer-rust/vim-racer'
 " Add maktaba and codefmt to the runtimepath.
 " (The latter must be installed before it can be used.)
 Plugin 'google/vim-maktaba'
@@ -66,11 +67,13 @@ Plugin 'google/vim-codefmt'
 " Also add Glaive, which is used to configure codefmt's maktaba flags. See
 " `:help :Glaive` for usage.
 Plugin 'google/vim-glaive'
+
+Plugin 'scrooloose/nerdcommenter'
+
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
+filetype plugin indent on    " required
 
-" the glaive#Install() should go after the call vundle#end()
-call glaive#Install()
 
 augroup autoformat_settings
   autocmd FileType c,cpp,proto,javascript AutoFormatBuffer clang-format
@@ -83,7 +86,6 @@ syntax on
 
 au FileType javascript call JavaScriptFold()
 
-"autocmd FileType java setlocal omnifunc=javacomplete#Complete
 
 " airline config
 set laststatus=2
@@ -128,19 +130,8 @@ let g:NERDTreeIndicatorMapCustom = {
             \ "Unknown"   : "?"
             \ }
 
-" go code
-let g:go_highlight_functions = 1
-let g:go_highlight_methods = 1
-let g:go_highlight_structs = 1
-let g:go_highlight_interfaces = 1
-let g:go_highlight_operators = 1
-let g:go_highlight_build_constraints = 1
-let g:go_fmt_command = "goimports"
-let g:go_fmt_fail_silently = 1
-let g:go_play_open_browser = 0
-
 "YCM
-let g:ycm_global_ycm_extra_conf = '~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp/ycm/.ycm_extra_conf.py' 
+let g:ycm_global_ycm_extra_conf = '~/.vim/bundle/YouCompleteMe/third_party/ycmd/.ycm_extra_conf.py' 
 let g:ycm_goto_buffer_command = 'vertical-split'
 " 补全功能在注释中同样有效
 let g:ycm_complete_in_comments=1
@@ -215,14 +206,6 @@ let g:tagbar_type_cpp = {
             \ }
             \ }
 
-" rust format
-let g:rustfmt_autosave = 1
-
-" racer 
-set hidden
-let g:racer_cmd = "/Users/xiehao/.cargo/bin/racer"
-let g:racer_experimental_completer = 1
-
 " common nmap
 nnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
 nmap <C-t> :TagbarToggle<CR>
@@ -266,7 +249,19 @@ nnoremap <leader>ji :YcmCompleter GoToInclude<CR>
 " .cpp <-> .h, plugin vim-fswitch
 nmap <silent> <Leader>swi :FSHere<cr>
 
-au FileType rust nmap gd <Plug>(rust-def)
-au FileType rust nmap gs <Plug>(rust-def-split)
-au FileType rust nmap gx <Plug>(rust-def-vertical)
-au FileType rust nmap <leader>gd <Plug>(rust-doc)
+" Add spaces after comment delimiters by default
+let g:NERDSpaceDelims = 1
+" Use compact syntax for prettified multi-line comments
+let g:NERDCompactSexyComs = 1
+" Align line-wise comment delimiters flush left instead of following code indentation
+let g:NERDDefaultAlign = 'left'
+" Set a language to use its alternate delimiters by default
+let g:NERDAltDelims_java = 1
+" Add your own custom formats or override the defaults
+let g:NERDCustomDelimiters = { 'c': { 'left': '/**','right': '*/' } }
+" Allow commenting and inverting empty lines (useful when commenting a region)
+let g:NERDCommentEmptyLines = 1
+" Enable trimming of trailing whitespace when uncommenting
+let g:NERDTrimTrailingWhitespace = 1
+" Enable NERDCommenterToggle to check all selected lines is commented or not
+let g:NERDToggleCheckAllLines = 1
