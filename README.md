@@ -51,7 +51,7 @@ make install    # 或 sh init.sh（兼容入口）
 | 目标 | 作用 |
 |---|---|
 | `make install` | 一键全装（子模块 → vimrc 软链 → 插件 → tern → help → verify） |
-| `make update` | 更新子模块与全部插件 |
+| `make update` | 更新子模块与全部插件（更新后建议 `make verify` 复检） |
 | `make verify` | 分层验证：外部依赖 + 插件能力冒烟测试 |
 | `make plugins` / `tern` / `help` | 单独执行某一步 |
 
@@ -79,4 +79,4 @@ cd ~/.vim/bundle/YouCompleteMe
 
 需要安装instant-markdown-d：`npm -g install instant-markdown-d`
 
-Copy the after/ftplugin/markdown/instant-markdown.vim file from this repo into your ~/.vim/after/ftplugin/markdown/ (creating directories as necessary), or follow your vim package manager's instructions.
+插件由 Vundle 安装，自带的 ftplugin 会自动生效，无需额外拷贝文件。
