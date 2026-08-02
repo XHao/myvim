@@ -581,22 +581,41 @@ exit $FAILED
 
 - [ ] **Step 2: 创建 scripts/verify.vim（插件能力层）**
 
+> 落地时与原计划有差异，记录于本块注释中。原因：
+> 1. `vim -E -s` 既不自动 source vimrc、也不自动 `runtime! plugin/*.vim`，仅 `source $HOME/.vimrc` 时所有插件命令都未注册（全部 FAIL）。
+>    → 必须显式追加 `runtime! plugin/**/*.vim`。
+> 2. `:GutentagsUpdate` 是 `command! -buffer` 缓冲区局部命令，仅在 `gutentags#setup_gutentags()` 处理真实项目缓冲区时才注册，
+>    `-E -s` 无头模式下永远不可全局 `exists()` 命中。改用 `exists('g:gutentags_enabled')` 验证插件已加载。
+> 3. `echom` 在 `-s` 静默模式下不会输出到 stdout（只能 `:messages` 查），make 输出里看不到 PASS/WARN。
+>    → 累计报告入 `s:lines`，结尾用 `:call writefile()` + `:!cat` 输出到 stdout。
+
 ```vim
 " 插件能力冒烟测试：由 make verify 以 vim -E -s -S 执行
+" 注意：-E -s 模式不会自动加载 vimrc，也不会自动 source plugin/*.vim，
+" 必须显式 source vimrc 并 runtime! plugin/**/*.vim 才能让插件命令注册。
+" echom 在 -s 模式不会输出到 stdout，所以报告累加进 s:lines，
+" 最后用 :!cat 输出到 stdout，并用 :cquit 反映退出码。
 " FAIL → :cquit（退出码非 0）；WARN 不阻塞
 " 约定：.vimrc 新增插件时在此登记一行检查
 
+source $HOME/.vimrc
+runtime! plugin/**/*.vim
+
 let s:fail = 0
+let s:lines = []
 
 function! s:report(level, name, hint) abort
   if a:level ==# 'PASS'
-    echom '[PASS] ' . a:name
+    let l:line = '[PASS] ' . a:name
   elseif a:level ==# 'WARN'
-    echom '[WARN] ' . a:name . ' → ' . a:hint
+    let l:line = '[WARN] ' . a:name . ' → ' . a:hint
   else
-    echom '[FAIL] ' . a:name . ' → ' . a:hint
+    let l:line = '[FAIL] ' . a:name . ' → ' . a:hint
     let s:fail = 1
   endif
+  call add(s:lines, l:line)
+  " 仍 echom 一份，便于 :messages 调试
+  echom l:line
 endfunction
 
 function! s:check_cmd(cmd, hint) abort
@@ -613,7 +632,13 @@ call s:check_cmd('Files', 'junegunn/fzf 未装上？运行 make plugins')
 call s:check_cmd('Rg', 'fzf.vim 未装上？运行 make plugins')
 call s:check_cmd('Git', 'vim-fugitive 未装上？运行 make plugins')
 call s:check_cmd('AutoFormatBuffer', 'vim-codefmt 未装上？运行 make plugins')
-call s:check_cmd('GutentagsUpdate', 'vim-gutentags 未装上？运行 make plugins')
+" GutentagsUpdate 是 buffer-local 命令，仅在打开项目缓冲区时注册，
+" 在 -E -s 无头模式下不可用。改为检查插件已加载（g:gutentags_enabled 存在）。
+if exists('g:gutentags_enabled')
+  call s:report('PASS', 'vim-gutentags 插件已加载', '')
+else
+  call s:report('FAIL', 'vim-gutentags 插件', '运行 make plugins')
+endif
 
 try
   colorscheme molokai
@@ -652,6 +677,12 @@ catch
   call s:report('WARN', ':help myvim 不可用', '运行 make help')
 endtry
 
+" 把累计报告输出到 stdout（-s 模式下 echom 不进 stdout，必须借 :! 打印）
+let s:reportfile = tempname()
+call writefile(s:lines, s:reportfile)
+execute '!' . 'cat ' . s:reportfile
+call delete(s:reportfile)
+
 if s:fail
   cquit
 endif
@@ -661,22 +692,28 @@ quit
 - [ ] **Step 3: 运行完整 make verify**
 
 Run: `make verify; echo "exit=$?"`
-Expected: 每项一行 PASS/WARN；本机预期 WARN：`instant-markdown-d`（若未全局安装）、`vim 无 python3`、`YCM 未编译`；无 FAIL；`exit=0`
+Expected: 每项一行 PASS/WARN；本机预期 WARN：`fzf 缺失`、`rg 缺失`、`instant-markdown-d 缺失`、`vim 无 python3`、`YCM 未编译`；无 FAIL；`exit=0`
+（注：本机 `ctags` 是 BSD 系统自带 exuberant-ctags 兼容二进制，`verify.sh` 只验存在性 → PASS；真正的 ctags 兼容性由 .vimrc 守卫在运行时处理。）
 
 - [ ] **Step 4: 验证 FAIL 会使退出码非 0（临时破坏法）**
+
+> 注意：`make verify` 的依赖链含 `30-plugins.sh`，会自动 `PluginInstall` 把移走的 vim-fugitive 克隆回来，
+> 导致直接 `make verify` 看不到 FAIL。要观察 FAIL，必须跳过安装步骤、直接调用 verify.vim。
 
 Run:
 ```bash
 mv ~/.vim/bundle/vim-fugitive /tmp/vim-fugitive-save
-make verify; echo "exit=$?"
+bash scripts/verify.sh >/dev/null 2>&1
+vim -E -s -S scripts/verify.vim </dev/null; echo "verify.vim exit=$?"
 mv /tmp/vim-fugitive-save ~/.vim/bundle/vim-fugitive
+make verify >/dev/null 2>&1; echo "exit-after-restore=$?"
 ```
-Expected: 输出含 `[FAIL] :Git`，`exit=2`（make 报告 Error）；恢复目录后 `make verify` 重新通过
+Expected: 输出含 `[FAIL] :Git → vim-fugitive 未装上？运行 make plugins`，`verify.vim exit=1`；恢复目录后 `make verify` 重新通过 `exit=0`
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add scripts/verify.sh scripts/verify.vim
+git add scripts/verify.sh scripts/verify.vim docs/superpowers/plans/2026-08-02-one-click-install.md
 git commit -m "Add two-layer make verify: external deps + plugin capability smoke tests"
 ```
 
