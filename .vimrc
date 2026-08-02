@@ -241,10 +241,18 @@ let g:NERDTrimTrailingWhitespace = 1
 " Enable NERDCommenterToggle to check all selected lines is commented or not
 let g:NERDToggleCheckAllLines = 1
 
-" fzf
-nmap <C-p> :Files<CR>
-nmap <leader>rg :Rg<CR>
+" fzf（无二进制时不映射，避免 fzf 插件弹出阻塞式下载提示）
+if executable('fzf')
+  nnoremap <C-p> :Files<CR>
+endif
+if executable('rg')
+  nnoremap <leader>rg :Rg<CR>
+endif
 
-" gutentags
+" gutentags（BSD ctags 不支持 --recurse，检测到不兼容则禁用）
 let g:gutentags_cache_dir = expand('~/.cache/tags')
 let g:gutentags_project_root = ['.git']
+call mkdir(g:gutentags_cache_dir, 'p')
+if !executable('ctags') || system('ctags --version') !~? 'exuberant\|universal'
+  let g:gutentags_enabled = 0
+endif
