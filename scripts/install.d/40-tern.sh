@@ -9,7 +9,7 @@ if [ ! -d "$TERN_DIR" ]; then
   exit 0
 fi
 
-if [ -d "$TERN_DIR/node_modules" ]; then
+if [ -d "$TERN_DIR/node_modules/tern" ]; then
   ok "tern 依赖已安装，跳过"
   exit 0
 fi
