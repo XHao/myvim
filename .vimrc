@@ -31,13 +31,13 @@ call vundle#begin()
 " let Vundle manage Vundle, required
 Plugin 'VundleVim/Vundle.vim'
 
-" ycm
-Plugin 'Valloric/YouCompleteMe'
-Plugin 'rdnetto/YCM-Generator'
-
-" clang
-Plugin 'SirVer/ultisnips'
-Plugin 'honza/vim-snippets'
+" ycm + ultisnips（需 vim +python3，否则跳过声明，见 make verify 提示）
+if has('python3')
+  Plugin 'Valloric/YouCompleteMe'
+  Plugin 'rdnetto/YCM-Generator'
+  Plugin 'SirVer/ultisnips'
+  Plugin 'honza/vim-snippets'
+endif
 
 Plugin 'vim-airline'
 Plugin 'node'

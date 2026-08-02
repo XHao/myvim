@@ -53,6 +53,7 @@ make install    # 或 sh init.sh（兼容入口）
 | `make install` | 一键全装（子模块 → vimrc 软链 → 插件 → tern → help → verify） |
 | `make update` | 更新子模块与全部插件（更新后建议 `make verify` 复检） |
 | `make verify` | 分层验证：外部依赖 + 插件能力冒烟测试 |
+| `make ycm` | 编译 YouCompleteMe（需 vim +python3，幂等） |
 | `make plugins` / `tern` / `help` | 单独执行某一步 |
 
 ### 新增插件约定

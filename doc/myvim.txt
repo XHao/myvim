@@ -14,12 +14,12 @@ Vundle.vim          插件管理器
 ==============================================================================
 2. 补全与片段                                                *myvim-complete*
 
-YouCompleteMe       语义补全（需编译，需 vim +python3）
+YouCompleteMe       语义补全（需 vim +python3，否则不声明；编译用 make ycm）
   <leader>jd        跳转定义 GoToDefinition
   <leader>jc        跳转声明 GoToDeclaration
   <leader>ji        跳转 include GoToInclude
 YCM-Generator       生成 .ycm_extra_conf.py
-UltiSnips           代码片段引擎（需 python3）
+UltiSnips           代码片段引擎（需 python3，否则不声明）
   <leader><tab>     展开片段 / 跳到下一占位符
   <leader><s-tab>   跳到上一占位符
 vim-snippets        片段库

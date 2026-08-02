@@ -57,14 +57,13 @@ endtry
 
 if has('python3')
   call s:report('PASS', 'vim +python3', '')
+  if empty(glob(expand('~/.vim/bundle/YouCompleteMe/third_party/ycmd/ycm_core*')))
+    call s:report('WARN', 'YCM 未编译', 'make ycm')
+  else
+    call s:report('PASS', 'YCM 已编译', '')
+  endif
 else
-  call s:report('WARN', 'vim 无 python3，YCM/UltiSnips 不可用', 'brew install vim')
-endif
-
-if empty(glob(expand('~/.vim/bundle/YouCompleteMe/third_party/ycmd/ycm_core*')))
-  call s:report('WARN', 'YCM 未编译', 'cd ~/.vim/bundle/YouCompleteMe && ./install.py --clangd-completer')
-else
-  call s:report('PASS', 'YCM 已编译', '')
+  call s:report('WARN', 'vim 无 python3，YCM/UltiSnips 已按条件跳过', 'brew install vim')
 endif
 
 let s:tagdir = expand('~/.cache/tags')

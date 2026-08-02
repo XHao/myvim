@@ -812,3 +812,114 @@ Expected: 无输出（doc/tags、bundle/* 均被忽略）
 - Spec 覆盖：spec §1（安装体系）→ Task 1-4；§2（.vimrc 增强）→ Task 6；§3（verify）→ Task 7；§4（help 文档）→ Task 5；§5（README）→ Task 8；验证计划 → Task 9。无缺口。
 - 占位符扫描：无 TBD/TODO；所有代码块为完整内容。
 - 一致性：Makefile 的 verify 目标调用 `scripts/verify.sh` + `scripts/verify.vim`，与 Task 7 文件名一致；`make help` 的 helptags 路径与 doc/ 位置一致；verify.vim 检查的插件与 Task 6 新增插件一致。
+
+---
+
+### Task 10: python3 提前检测 + 条件插件 + make ycm
+
+**背景：** 在 vim 缺少 `+python3` 的机器（如 macOS 自带 vim）上，原安装流程仍会克隆 YCM（178MB），并在每次 vim 启动时报 `YouCompleteMe unavailable`；WARN 只在 install 末尾出现。本任务：提前检测、按条件声明插件、提供 opt-in `make ycm` 编译目标。
+
+**Files:**
+- Create: `scripts/install.d/00-preflight.sh`
+- Create: `scripts/install.d/50-ycm.sh`
+- Modify: `Makefile`（preflight 作链头；新增 ycm 目标）
+- Modify: `.vimrc`（YCM/UltiSnips 声明包入 `if has('python3')`）
+- Modify: `scripts/verify.vim`（python3/YCM 检查嵌套）
+- Modify: `doc/myvim.txt`、`README.md`
+
+**Change 1: `scripts/install.d/00-preflight.sh`**
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(dirname "$0")/../common.sh"
+
+require_cmd git "brew install git"
+require_cmd vim "brew install vim"
+
+# 提前检测 python3（YCM/UltiSnips 的硬性前提），不满足则提前提示
+if vim -E -s -c "if !has('python3') | cquit | endif" -c "qa" </dev/null >/dev/null 2>&1; then
+  ok "vim 支持 python3"
+else
+  warn "当前 vim 无 python3 支持，YCM/UltiSnips 将被跳过 → brew install vim"
+fi
+```
+
+**Change 2: `Makefile`** — `.PHONY` 增 `preflight ycm`；新增 `preflight` 目标；`submodules: preflight`；尾部新增独立 `ycm` 目标（不进 install 链）：
+
+```makefile
+preflight:
+	bash $(INSTALL_DIR)/00-preflight.sh
+
+submodules: preflight
+	bash $(INSTALL_DIR)/10-submodules.sh
+
+...
+
+ycm:
+	bash $(INSTALL_DIR)/50-ycm.sh
+```
+
+**Change 3: `scripts/install.d/50-ycm.sh`**
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(dirname "$0")/../common.sh"
+
+YCM_DIR="$HOME/.vim/bundle/YouCompleteMe"
+
+if ! vim -E -s -c "if !has('python3') | cquit | endif" -c "qa" </dev/null >/dev/null 2>&1; then
+  err "vim 无 python3 支持，无法编译/使用 YCM → brew install vim"
+  exit 1
+fi
+
+if [ ! -d "$YCM_DIR" ]; then
+  info "YCM 未安装，先运行插件安装..."
+  bash "$(dirname "$0")/30-plugins.sh"
+fi
+
+if compgen -G "$YCM_DIR/third_party/ycmd/ycm_core*" >/dev/null; then
+  ok "YCM 已编译，跳过"
+  exit 0
+fi
+
+require_cmd python3 "brew install python"
+require_cmd cmake "brew install cmake"
+
+info "编译 YouCompleteMe（可能需要几分钟）..."
+(cd "$YCM_DIR" && ./install.py --clangd-completer)
+ok "YCM 编译完成"
+```
+
+**Change 4: `.vimrc`** — 原 4 行无条件 YCM/UltiSnips 声明包入条件：
+
+```vim
+" ycm + ultisnips（需 vim +python3，否则跳过声明，见 make verify 提示）
+if has('python3')
+  Plugin 'Valloric/YouCompleteMe'
+  Plugin 'rdnetto/YCM-Generator'
+  Plugin 'SirVer/ultisnips'
+  Plugin 'honza/vim-snippets'
+endif
+```
+
+后续 `g:ycm_*` / UltiSnips 设置块未改（插件缺失时无害）。
+
+**Change 5: `scripts/verify.vim`** — python3/YCM 检查改为嵌套（无 python3 时只一行 WARN，不再单独报 YCM 未编译）：
+
+```vim
+if has('python3')
+  call s:report('PASS', 'vim +python3', '')
+  if empty(glob(expand('~/.vim/bundle/YouCompleteMe/third_party/ycmd/ycm_core*')))
+    call s:report('WARN', 'YCM 未编译', 'make ycm')
+  else
+    call s:report('PASS', 'YCM 已编译', '')
+  endif
+else
+  call s:report('WARN', 'vim 无 python3，YCM/UltiSnips 已按条件跳过', 'brew install vim')
+endif
+```
+
+**Change 6/7:** `doc/myvim.txt` YouCompleteMe 行改为 `（需 vim +python3，否则不声明；编译用 make ycm）`，UltiSnips 行改为 `（需 python3，否则不声明）`；`README.md` 常用 make 目标表新增 `| make ycm | 编译 YouCompleteMe（需 vim +python3，幂等） |`。
+

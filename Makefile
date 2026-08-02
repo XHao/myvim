@@ -1,4 +1,4 @@
-.PHONY: install submodules vimrc plugins tern help update verify
+.PHONY: install submodules vimrc plugins tern help update verify preflight ycm
 
 INSTALL_DIR := scripts/install.d
 
@@ -6,7 +6,10 @@ install: verify
 	@echo ""
 	@echo "== 安装完成。上方如有 WARN 请按提示处理 =="
 
-submodules:
+preflight:
+	bash $(INSTALL_DIR)/00-preflight.sh
+
+submodules: preflight
 	bash $(INSTALL_DIR)/10-submodules.sh
 
 vimrc: submodules
@@ -29,3 +32,6 @@ update:
 verify: help
 	bash scripts/verify.sh
 	vim -E -s -S scripts/verify.vim </dev/null
+
+ycm:
+	bash $(INSTALL_DIR)/50-ycm.sh
