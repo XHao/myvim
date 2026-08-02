@@ -269,7 +269,7 @@ help:
 
 update:
 	git submodule update --init
-	vim -E -s -c "source $(HOME)/.vimrc" -c "PluginInstall!" -c "qa" </dev/null
+	vim -E -s -c 'source $$HOME/.vimrc' -c "PluginInstall!" -c "qa" </dev/null
 
 verify:
 	bash scripts/verify.sh
