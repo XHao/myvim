@@ -680,11 +680,11 @@ endtry
 " 把累计报告输出到 stdout（-s 模式下 echom 不进 stdout，必须借 :! 打印）
 let s:reportfile = tempname()
 call writefile(s:lines, s:reportfile)
-execute '!' . 'cat ' . s:reportfile
+execute '!' . 'cat ' . shellescape(s:reportfile)
 call delete(s:reportfile)
 
 if s:fail
-  cquit
+  cquit 1
 endif
 quit
 ```
