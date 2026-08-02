@@ -247,44 +247,51 @@ git commit -m "Add headless plugin install and tern npm scripts"
 
 INSTALL_DIR := scripts/install.d
 
-install: submodules vimrc plugins tern help verify
+install: verify
 	@echo ""
 	@echo "== 安装完成。上方如有 WARN 请按提示处理 =="
 
 submodules:
 	bash $(INSTALL_DIR)/10-submodules.sh
 
-vimrc:
+vimrc: submodules
 	bash $(INSTALL_DIR)/20-vimrc.sh
 
-plugins:
+plugins: vimrc
 	bash $(INSTALL_DIR)/30-plugins.sh
 
-tern:
+tern: plugins
 	bash $(INSTALL_DIR)/40-tern.sh
 
-help:
-	vim -E -s -c "helptags $(HOME)/.vim/doc" -c "qa" </dev/null
+help: tern
+	vim -E -s -c 'helptags $$HOME/.vim/doc' -c "qa" </dev/null
 	@echo "[ OK ] doc/tags 已生成"
 
 update:
 	git submodule update --init
 	vim -E -s -c 'source $$HOME/.vimrc' -c "PluginInstall!" -c "qa" </dev/null
 
-verify:
+verify: help
 	bash scripts/verify.sh
 	vim -E -s -S scripts/verify.vim </dev/null
 ```
 
 注意：`verify` 目标引用的 `scripts/verify.sh` / `scripts/verify.vim` 在 Task 7 才创建，本任务内不要运行 `make verify` / `make install`。
 
-- [ ] **Step 2: 重写 init.sh 为兼容入口**
+- [ ] **Step 2: 重写 init.sh 为兼容入口（经符号链接调用也能解析到真实仓库目录）**
 
 ```bash
 #!/usr/bin/env bash
-# 兼容入口：等价于 make install
+# 兼容入口：等价于 make install（可经符号链接调用）
 set -euo pipefail
-cd "$(dirname "$0")"
+
+SOURCE="$0"
+while [ -L "$SOURCE" ]; do
+  DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+cd "$(cd -P "$(dirname "$SOURCE")" && pwd)"
 exec make install
 ```
 
