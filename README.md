@@ -16,11 +16,45 @@ this is the vim configuration
 
 ## install myvim
 
-* `git clone https://github.com/XHao/myvim.git ~/.vim`
-* `cd ~/.vim`
-* `sh init.sh`
+### 前置依赖
 
-*after these steps, myvim is add to your computer*
+macOS（推荐用 brew 安装的 vim，自带 vim 无 python3，YCM/UltiSnips 不可用）：
+
+```
+brew install git vim fzf ripgrep ctags node
+```
+
+Linux：
+
+```
+sudo apt-get install -y git vim fzf ripgrep exuberant-ctags nodejs npm
+```
+
+### 一键安装
+
+```
+git clone https://github.com/XHao/myvim.git ~/.vim
+cd ~/.vim
+make install    # 或 sh init.sh（兼容入口）
+```
+
+安装末尾会自动运行 `make verify` 输出体检报告；WARN 项按提示处理即可。
+
+### 常用 make 目标
+
+| 目标 | 作用 |
+|---|---|
+| `make install` | 一键全装（子模块 → vimrc 软链 → 插件 → tern → help → verify） |
+| `make update` | 更新子模块与全部插件 |
+| `make verify` | 分层验证：外部依赖 + 插件能力冒烟测试 |
+| `make plugins` / `tern` / `help` | 单独执行某一步 |
+
+### 新增插件约定
+
+往 .vimrc 加插件时，请同步：
+
+1. `scripts/verify.vim` 加一行能力检查
+2. `doc/myvim.txt` 加一节说明（`:help myvim`）
 
 ## plugins
 
