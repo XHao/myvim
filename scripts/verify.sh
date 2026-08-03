@@ -18,11 +18,11 @@ check_bin() {
 
 check_bin git    "brew install git"                     FAIL
 check_bin vim    "brew install vim"                     FAIL
-check_bin fzf    "brew install fzf"                     WARN
-check_bin rg     "brew install ripgrep"                 WARN
+check_bin fzf    "make deps"                            WARN
+check_bin rg     "make deps"                            WARN
 check_bin ctags  "brew install ctags"                   WARN
 check_bin node   "brew install node"                    WARN
 check_bin npm    "brew install node"                    WARN
-check_bin instant-markdown-d "npm -g install instant-markdown-d" WARN
+check_bin instant-markdown-d "make deps"                WARN
 
 exit $FAILED

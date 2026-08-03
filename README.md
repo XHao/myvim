@@ -25,14 +25,16 @@ this is the vim configuration
 macOS（推荐用 brew 安装的 vim，自带 vim 无 python3，YCM/UltiSnips 不可用）：
 
 ```
-brew install git vim fzf ripgrep ctags node
+brew install git vim ctags node
 ```
 
 Linux：
 
 ```
-sudo apt-get install -y git vim fzf ripgrep exuberant-ctags nodejs npm
+sudo apt-get install -y git vim exuberant-ctags nodejs npm
 ```
+
+fzf、ripgrep、instant-markdown-d 由 `make install` 自动安装（检测 brew/apt-get，失败仅 WARN 不中断）；也可单独 `make deps` 触发。
 
 注意：Ubuntu 默认的 vim 可能不含 python3 支持（可改装 vim-nox），否则 YCM/UltiSnips 不可用；`make verify` 会检测并提示。
 
@@ -50,7 +52,8 @@ make install    # 或 sh init.sh（兼容入口）
 
 | 目标 | 作用 |
 |---|---|
-| `make install` | 一键全装（子模块 → vimrc 软链 → 插件 → tern → help → verify） |
+| `make install` | 一键全装（前置检测 → 可选依赖 → 子模块 → vimrc 软链 → 插件 → tern → help → verify） |
+| `make deps` | 自动安装可选依赖 fzf / ripgrep / instant-markdown-d（brew/apt-get，幂等） |
 | `make update` | 更新子模块与全部插件（更新后建议 `make verify` 复检） |
 | `make verify` | 分层验证：外部依赖 + 插件能力冒烟测试 |
 | `make ycm` | 编译 YouCompleteMe（需 vim +python3，幂等） |

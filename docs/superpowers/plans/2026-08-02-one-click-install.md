@@ -929,3 +929,19 @@ endif
 
 **Change 6/7:** `doc/myvim.txt` YouCompleteMe 行改为 `（需 vim +python3，否则不声明；编译用 make ycm）`，UltiSnips 行改为 `（需 python3，否则不声明）`；`README.md` 常用 make 目标表新增 `| make ycm | 编译 YouCompleteMe（需 vim +python3，幂等） |`。
 
+
+### Task 11: 可选依赖自动安装（make deps）
+
+**背景：** 用户要求将 verify 提示的可选依赖（fzf / ripgrep / instant-markdown-d）纳入安装流程，替代手动安装。
+
+**Files:**
+- Create: `scripts/install.d/05-deps.sh`
+- Modify: `Makefile`（deps 目标插入链中：preflight → deps → submodules）
+- Modify: `scripts/verify.sh`（fzf/rg/instant-markdown-d 提示改为 `make deps`）
+- Modify: `README.md`（前置依赖移除 fzf/ripgrep，目标表加 deps 行）
+
+**行为约定：**
+- 检测包管理器：brew（macOS）/ apt-get（Linux，非 root 自动加 sudo）；都无 → WARN 跳过
+- 幂等：`have <cmd>` 已存在则跳过
+- 错误分级：均为可选能力，安装失败只 WARN 不中断 install（verify 兜底）
+- instant-markdown-d 走 `npm -g install`；无 npm → WARN 跳过并提示装 node

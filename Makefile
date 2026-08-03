@@ -1,4 +1,4 @@
-.PHONY: install submodules vimrc plugins tern help update verify preflight ycm
+.PHONY: install submodules vimrc plugins tern help update verify preflight deps ycm
 
 INSTALL_DIR := scripts/install.d
 
@@ -9,7 +9,10 @@ install: verify
 preflight:
 	bash $(INSTALL_DIR)/00-preflight.sh
 
-submodules: preflight
+deps: preflight
+	bash $(INSTALL_DIR)/05-deps.sh
+
+submodules: deps
 	bash $(INSTALL_DIR)/10-submodules.sh
 
 vimrc: submodules
