@@ -31,13 +31,13 @@ call vundle#begin()
 " let Vundle manage Vundle, required
 Plugin 'VundleVim/Vundle.vim'
 
-" ycm
-Plugin 'Valloric/YouCompleteMe'
-Plugin 'rdnetto/YCM-Generator'
-
-" clang
-Plugin 'SirVer/ultisnips'
-Plugin 'honza/vim-snippets'
+" ycm + ultisnips（需 vim +python3，否则跳过声明，见 make verify 提示）
+if has('python3')
+  Plugin 'Valloric/YouCompleteMe'
+  Plugin 'rdnetto/YCM-Generator'
+  Plugin 'SirVer/ultisnips'
+  Plugin 'honza/vim-snippets'
+endif
 
 Plugin 'vim-airline'
 Plugin 'node'
@@ -56,10 +56,6 @@ Plugin 'artur-shaik/vim-javacomplete2'
 Plugin 'octol/vim-cpp-enhanced-highlight'
 Plugin 'nathanaelkane/vim-indent-guides'
 Plugin 'derekwyatt/vim-fswitch'
-" indexer
-Plugin 'vim-scripts/indexer.tar.gz'
-Plugin 'vim-scripts/DfrankUtil'
-Plugin 'vim-scripts/vimprj'
 " Add maktaba and codefmt to the runtimepath.
 " (The latter must be installed before it can be used.)
 Plugin 'google/vim-maktaba'
@@ -67,6 +63,16 @@ Plugin 'google/vim-codefmt'
 " Also add Glaive, which is used to configure codefmt's maktaba flags. See
 " `:help :Glaive` for usage.
 Plugin 'google/vim-glaive'
+
+" fzf 模糊搜索（需 brew install fzf ripgrep）
+Plugin 'junegunn/fzf'
+Plugin 'junegunn/fzf.vim'
+" git
+Plugin 'tpope/vim-fugitive'
+" 括号自动配对
+Plugin 'jiangmiao/auto-pairs'
+" 自动维护 ctags
+Plugin 'ludovicchabant/vim-gutentags'
 
 Plugin 'scrooloose/nerdcommenter'
 
@@ -118,7 +124,7 @@ let g:NERDTreeDirArrowCollapsible = '▾'
 autocmd StdinReadPre * let s:std_in=1
 autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
-let g:NERDTreeIndicatorMapCustom = {
+let g:NERDTreeGitStatusIndicatorMapCustom = {
             \ "Modified"  : "✹",
             \ "Staged"    : "✚",
             \ "Untracked" : "✭",
@@ -210,37 +216,6 @@ let g:tagbar_type_cpp = {
 nnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
 nmap <C-t> :TagbarToggle<CR>
 nmap <C-n> :NERDTreeToggle<CR>
-" imap
-inoremap ( ()<LEFT>
-inoremap [ []<LEFT>
-inoremap { {}<LEFT>
-
-inoremap ) <c-r>=ClosePair(')')<CR>
-inoremap ] <c-r>=ClosePair(']')<CR>
-inoremap } <c-r>=ClosePair('}')<CR>
-
-inoremap " <c-r>=QuoteDelim('"')<CR>
-inoremap ' <c-r>=QuoteDelim("'")<CR>
-
-function ClosePair(char)
-    if getline('.')[col('.') - 1] == a:char
-        return "\<Right>"
-    else
-        return a:char
-    endif
-endf
-
-function QuoteDelim(char)
-    let line = getline('.')
-    let col = col('.')
-    if line[col - 2] == "\\"
-        return a:char
-    elseif line[col - 1] == a:char
-        return "\<Right>"
-    else
-        return a:char.a:char."\<LEFT>"
-    endif
-endf
 
 nnoremap <leader>jc :YcmCompleter GoToDeclaration<CR>
 nnoremap <leader>jd :YcmCompleter GoToDefinition<CR>
@@ -265,3 +240,19 @@ let g:NERDCommentEmptyLines = 1
 let g:NERDTrimTrailingWhitespace = 1
 " Enable NERDCommenterToggle to check all selected lines is commented or not
 let g:NERDToggleCheckAllLines = 1
+
+" fzf（无二进制时不映射，避免 fzf 插件弹出阻塞式下载提示）
+if executable('fzf')
+  nnoremap <C-p> :Files<CR>
+endif
+if executable('rg')
+  nnoremap <leader>rg :Rg<CR>
+endif
+
+" gutentags（BSD ctags 不支持 --recurse，检测到不兼容则禁用）
+let g:gutentags_cache_dir = expand('~/.cache/tags')
+let g:gutentags_project_root = ['.git']
+call mkdir(g:gutentags_cache_dir, 'p')
+if !executable('ctags') || system('ctags --version') !~? 'exuberant\|universal'
+  let g:gutentags_enabled = 0
+endif

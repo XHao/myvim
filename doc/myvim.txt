@@ -1,0 +1,76 @@
+*myvim.txt*  myvim 插件能力一览                                    *myvim*
+
+本手册列出 ~/.vim 配置中所有插件的用途、命令与快捷键。
+新增插件时请同步维护本文档与 scripts/verify.vim。
+
+==============================================================================
+1. 插件管理                                                   *myvim-vundle*
+
+Vundle.vim          插件管理器
+  :PluginInstall    安装 .vimrc 中声明的插件
+  :PluginInstall!   更新全部插件
+  :PluginClean      清理未声明的插件
+
+==============================================================================
+2. 补全与片段                                                *myvim-complete*
+
+YouCompleteMe       语义补全（需 vim +python3，否则不声明；编译用 make ycm）
+  <leader>jd        跳转定义 GoToDefinition
+  <leader>jc        跳转声明 GoToDeclaration
+  <leader>ji        跳转 include GoToInclude
+YCM-Generator       生成 .ycm_extra_conf.py
+UltiSnips           代码片段引擎（需 python3，否则不声明）
+  <leader><tab>     展开片段 / 跳到下一占位符
+  <leader><s-tab>   跳到上一占位符
+vim-snippets        片段库
+
+==============================================================================
+3. 文件与跳转                                              *myvim-navigation*
+
+NERDTree            文件树（<C-n> 开关），显示隐藏文件
+nerdtree-git-plugin 文件树中显示 git 状态图标
+Tagbar              符号大纲（<C-t> 开关）
+fzf + fzf.vim       模糊搜索（需 fzf、ripgrep 二进制）
+  <C-p>             :Files 模糊找文件
+  <leader>rg        :Rg 全文搜索
+vim-fswitch         <leader>swi 在 .cpp/.h 间切换
+vim-gutentags       后台自动维护 ctags（缓存于 ~/.cache/tags）
+
+==============================================================================
+4. Git                                                          *myvim-git*
+
+vim-fugitive        vim 内 Git
+  :Git blame        逐行 blame
+  :Git diff         diff
+  :Git log          日志
+
+==============================================================================
+5. 编辑增强                                                 *myvim-editing*
+
+auto-pairs          括号/引号自动配对（替代旧自研函数）
+nerdcommenter       注释开关（<leader>c<space> 切换注释）
+tabular             对齐（:Tab /字符）
+vim-surround 未装；自动配对由 auto-pairs 负责
+
+==============================================================================
+6. 语言支持                                               *myvim-languages*
+
+vim-cpp-enhanced-highlight   C++ 增强高亮
+vim-javacomplete2            Java 补全
+vim-javascript-syntax        JS 语法高亮
+tern_for_vim                 JS 跳转（<leader>d → TernDef，需 npm install）
+node                         node 文件类型支持
+vim-markdown                 Markdown 高亮/折叠
+vim-instant-markdown         浏览器实时预览（需 instant-markdown-d）
+
+==============================================================================
+7. 界面与格式化                                                 *myvim-ui*
+
+vim-airline         状态栏 + tabline
+vim-indent-guides   缩进参考线（启动即启用，从第 2 级开始）
+molokai             配色方案
+vim-codefmt         保存时自动格式化（c/cpp/proto/javascript，clang-format）
+vim-maktaba/glaive  codefmt 的依赖框架
+
+==============================================================================
+ vim:tw=78:ts=8:ft=help:norl:

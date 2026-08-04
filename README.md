@@ -4,23 +4,67 @@ this is the vim configuration
 
 ## pre-condition
 
+通常只需按下方「前置依赖」用包管理器安装 vim 即可；本节仅在需要自行编译 vim 时参考。
+
 ### install git
 
-### install vim
+### install vim（从源码编译，可选）
 
 * git clone https://github.com/vim/vim.git
-* 安装python-dev：sudo apt-get install -y python-dev
+* 安装python3-dev：sudo apt-get install -y python3-dev
 * cd vim
-* ./configure --with-features=huge --enable-multibyte --enable-rubyinterp=yes --enable-pythoninterp=yes --with-python-config-dir=/usr/lib/python2.7/config-x86_64-linux-gnu --enable-perlinterp=yes --enable-luainterp=yes
+* ./configure --with-features=huge --enable-multibyte --enable-rubyinterp=yes --enable-python3interp=yes --enable-perlinterp=yes --enable-luainterp=yes
 * sudo make install
+
+注意：YCM/UltiSnips 需要 python3 支持，编译后可用 `vim --version | grep python3` 确认是 `+python3`。
 
 ## install myvim
 
-* `git clone https://github.com/XHao/myvim.git ~/.vim`
-* `cd ~/.vim`
-* `sh init.sh`
+### 前置依赖
 
-*after these steps, myvim is add to your computer*
+macOS（推荐用 brew 安装的 vim，自带 vim 无 python3，YCM/UltiSnips 不可用）：
+
+```
+brew install git vim ctags node
+```
+
+Linux：
+
+```
+sudo apt-get install -y git vim exuberant-ctags nodejs npm
+```
+
+fzf、ripgrep、instant-markdown-d 由 `make install` 自动安装（检测 brew/apt-get，失败仅 WARN 不中断）；也可单独 `make deps` 触发。
+
+注意：Ubuntu 默认的 vim 可能不含 python3 支持（可改装 vim-nox），否则 YCM/UltiSnips 不可用；`make verify` 会检测并提示。
+
+### 一键安装
+
+```
+git clone https://github.com/XHao/myvim.git ~/.vim
+cd ~/.vim
+make install    # 或 sh init.sh（兼容入口）
+```
+
+安装末尾会自动运行 `make verify` 输出体检报告；WARN 项按提示处理即可。
+
+### 常用 make 目标
+
+| 目标 | 作用 |
+|---|---|
+| `make install` | 一键全装（前置检测 → 可选依赖 → 子模块 → vimrc 软链 → 插件 → tern → help → verify） |
+| `make deps` | 自动安装可选依赖 fzf / ripgrep / instant-markdown-d（brew/apt-get，幂等） |
+| `make update` | 更新子模块与全部插件（更新后建议 `make verify` 复检） |
+| `make verify` | 分层验证：外部依赖 + 插件能力冒烟测试 |
+| `make ycm` | 编译 YouCompleteMe（需 vim +python3，幂等） |
+| `make plugins` / `tern` / `help` | 单独执行某一步 |
+
+### 新增插件约定
+
+往 .vimrc 加插件时，请同步：
+
+1. `scripts/verify.vim` 加一行能力检查
+2. `doc/myvim.txt` 加一节说明（`:help myvim`）
 
 ## plugins
 
@@ -30,13 +74,13 @@ YCM本身需要编译之后才能使用，所以每次更新之后都要重新�
 
 ```
 cd ~/.vim/bundle/YouCompleteMe
-./install.py --all
+./install.py --clangd-completer
 ```
 
-*tips*:如果想要直接启用参数`--all`，必须确保`xbuild, go, tsserver, node, npm, rustc, and cargo tools are installed and in your PATH`,否则只能根据你需要的语言插件进行编译
+*tips*：`--clangd-completer` 是轻量可靠的默认选择；如需更多语言支持可改用 `--all`，但必须确保 `xbuild, go, tsserver, node, npm, rustc, and cargo tools are installed and in your PATH`。
 
 ### [vim-instant-markdown](https://github.com/suan/vim-instant-markdown)
 
 需要安装instant-markdown-d：`npm -g install instant-markdown-d`
 
-Copy the after/ftplugin/markdown/instant-markdown.vim file from this repo into your ~/.vim/after/ftplugin/markdown/ (creating directories as necessary), or follow your vim package manager's instructions.
+插件由 Vundle 安装，自带的 ftplugin 会自动生效，无需额外拷贝文件。

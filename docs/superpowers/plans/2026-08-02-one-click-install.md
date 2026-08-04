@@ -104,15 +104,28 @@ source "$(dirname "$0")/../common.sh"
 VIMRC_SRC="$HOME/.vim/.vimrc"
 VIMRC_DST="$HOME/.vimrc"
 
-# 已是指向本仓库的软链 → 幂等跳过
-if [ -L "$VIMRC_DST" ] && [ "$(readlink "$VIMRC_DST")" = "$VIMRC_SRC" ]; then
-  ok "~/.vimrc 已链接到本仓库，跳过"
-  exit 0
+# 已是指向本仓库的软链（含相对软链）→ 幂等跳过
+if [ -L "$VIMRC_DST" ]; then
+  CURTARGET="$(readlink "$VIMRC_DST")"
+  case "$CURTARGET" in
+    /*) ;;
+    *)  CURTARGET="$(dirname "$VIMRC_DST")/$CURTARGET" ;;
+  esac
+  CURTARGET="${CURTARGET%/}"
+  if [ "$CURTARGET" = "$VIMRC_SRC" ]; then
+    ok "~/.vimrc 已链接到本仓库，跳过"
+    exit 0
+  fi
 fi
 
 # 存在其它文件或软链 → 备份后替换
 if [ -e "$VIMRC_DST" ] || [ -L "$VIMRC_DST" ]; then
   BACKUP="$VIMRC_DST.bak.$(date +%Y%m%d)"
+  n=1
+  while [ -e "$BACKUP" ] || [ -L "$BACKUP" ]; do
+    BACKUP="$VIMRC_DST.bak.$(date +%Y%m%d).$n"
+    n=$((n+1))
+  done
   warn "备份已有 ~/.vimrc → $BACKUP"
   mv "$VIMRC_DST" "$BACKUP"
 fi
@@ -168,7 +181,8 @@ source "$(dirname "$0")/../common.sh"
 require_cmd vim "brew install vim"
 
 info "无头模式安装 Vundle 插件..."
-vim -E -s -c "source $HOME/.vimrc" -c "PluginInstall" -c "qa" </dev/null
+# 注意：单个插件克隆失败不会反映到本脚本退出码，由 make verify 兜底检测
+vim -E -s -c 'source $HOME/.vimrc' -c "PluginInstall" -c "qa" </dev/null
 ok "插件安装完成"
 ```
 
@@ -186,7 +200,7 @@ if [ ! -d "$TERN_DIR" ]; then
   exit 0
 fi
 
-if [ -d "$TERN_DIR/node_modules" ]; then
+if [ -d "$TERN_DIR/node_modules/tern" ]; then
   ok "tern 依赖已安装，跳过"
   exit 0
 fi
@@ -233,44 +247,51 @@ git commit -m "Add headless plugin install and tern npm scripts"
 
 INSTALL_DIR := scripts/install.d
 
-install: submodules vimrc plugins tern help verify
+install: verify
 	@echo ""
 	@echo "== 安装完成。上方如有 WARN 请按提示处理 =="
 
 submodules:
 	bash $(INSTALL_DIR)/10-submodules.sh
 
-vimrc:
+vimrc: submodules
 	bash $(INSTALL_DIR)/20-vimrc.sh
 
-plugins:
+plugins: vimrc
 	bash $(INSTALL_DIR)/30-plugins.sh
 
-tern:
+tern: plugins
 	bash $(INSTALL_DIR)/40-tern.sh
 
-help:
-	vim -E -s -c "helptags $(HOME)/.vim/doc" -c "qa" </dev/null
+help: tern
+	vim -E -s -c 'helptags $$HOME/.vim/doc' -c "qa" </dev/null
 	@echo "[ OK ] doc/tags 已生成"
 
 update:
 	git submodule update --init
-	vim -E -s -c "source $(HOME)/.vimrc" -c "PluginInstall!" -c "qa" </dev/null
+	vim -E -s -c 'source $$HOME/.vimrc' -c "PluginInstall!" -c "qa" </dev/null
 
-verify:
+verify: help
 	bash scripts/verify.sh
 	vim -E -s -S scripts/verify.vim </dev/null
 ```
 
 注意：`verify` 目标引用的 `scripts/verify.sh` / `scripts/verify.vim` 在 Task 7 才创建，本任务内不要运行 `make verify` / `make install`。
 
-- [ ] **Step 2: 重写 init.sh 为兼容入口**
+- [ ] **Step 2: 重写 init.sh 为兼容入口（经符号链接调用也能解析到真实仓库目录）**
 
 ```bash
 #!/usr/bin/env bash
-# 兼容入口：等价于 make install
+# 兼容入口：等价于 make install（可经符号链接调用）
 set -euo pipefail
-cd "$(dirname "$0")"
+
+SOURCE="$0"
+while [ -L "$SOURCE" ]; do
+  DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+cd "$(cd -P "$(dirname "$SOURCE")" && pwd)"
 exec make install
 ```
 
@@ -478,13 +499,21 @@ endf
 在 .vimrc 末尾追加：
 
 ```vim
-" fzf
-nmap <C-p> :Files<CR>
-nmap <leader>rg :Rg<CR>
+" fzf（无二进制时不映射，避免 fzf 插件弹出阻塞式下载提示）
+if executable('fzf')
+  nnoremap <C-p> :Files<CR>
+endif
+if executable('rg')
+  nnoremap <leader>rg :Rg<CR>
+endif
 
-" gutentags
+" gutentags（BSD ctags 不支持 --recurse，检测到不兼容则禁用）
 let g:gutentags_cache_dir = expand('~/.cache/tags')
 let g:gutentags_project_root = ['.git']
+call mkdir(g:gutentags_cache_dir, 'p')
+if !executable('ctags') || system('ctags --version') !~? 'exuberant\|universal'
+  let g:gutentags_enabled = 0
+endif
 ```
 
 - [ ] **Step 5: 安装新插件并清理旧插件**
@@ -552,22 +581,41 @@ exit $FAILED
 
 - [ ] **Step 2: 创建 scripts/verify.vim（插件能力层）**
 
+> 落地时与原计划有差异，记录于本块注释中。原因：
+> 1. `vim -E -s` 既不自动 source vimrc、也不自动 `runtime! plugin/*.vim`，仅 `source $HOME/.vimrc` 时所有插件命令都未注册（全部 FAIL）。
+>    → 必须显式追加 `runtime! plugin/**/*.vim`。
+> 2. `:GutentagsUpdate` 是 `command! -buffer` 缓冲区局部命令，仅在 `gutentags#setup_gutentags()` 处理真实项目缓冲区时才注册，
+>    `-E -s` 无头模式下永远不可全局 `exists()` 命中。改用 `exists('g:gutentags_enabled')` 验证插件已加载。
+> 3. `echom` 在 `-s` 静默模式下不会输出到 stdout（只能 `:messages` 查），make 输出里看不到 PASS/WARN。
+>    → 累计报告入 `s:lines`，结尾用 `:call writefile()` + `:!cat` 输出到 stdout。
+
 ```vim
 " 插件能力冒烟测试：由 make verify 以 vim -E -s -S 执行
+" 注意：-E -s 模式不会自动加载 vimrc，也不会自动 source plugin/*.vim，
+" 必须显式 source vimrc 并 runtime! plugin/**/*.vim 才能让插件命令注册。
+" echom 在 -s 模式不会输出到 stdout，所以报告累加进 s:lines，
+" 最后用 :!cat 输出到 stdout，并用 :cquit 反映退出码。
 " FAIL → :cquit（退出码非 0）；WARN 不阻塞
 " 约定：.vimrc 新增插件时在此登记一行检查
 
+source $HOME/.vimrc
+runtime! plugin/**/*.vim
+
 let s:fail = 0
+let s:lines = []
 
 function! s:report(level, name, hint) abort
   if a:level ==# 'PASS'
-    echom '[PASS] ' . a:name
+    let l:line = '[PASS] ' . a:name
   elseif a:level ==# 'WARN'
-    echom '[WARN] ' . a:name . ' → ' . a:hint
+    let l:line = '[WARN] ' . a:name . ' → ' . a:hint
   else
-    echom '[FAIL] ' . a:name . ' → ' . a:hint
+    let l:line = '[FAIL] ' . a:name . ' → ' . a:hint
     let s:fail = 1
   endif
+  call add(s:lines, l:line)
+  " 仍 echom 一份，便于 :messages 调试
+  echom l:line
 endfunction
 
 function! s:check_cmd(cmd, hint) abort
@@ -584,7 +632,13 @@ call s:check_cmd('Files', 'junegunn/fzf 未装上？运行 make plugins')
 call s:check_cmd('Rg', 'fzf.vim 未装上？运行 make plugins')
 call s:check_cmd('Git', 'vim-fugitive 未装上？运行 make plugins')
 call s:check_cmd('AutoFormatBuffer', 'vim-codefmt 未装上？运行 make plugins')
-call s:check_cmd('GutentagsUpdate', 'vim-gutentags 未装上？运行 make plugins')
+" GutentagsUpdate 是 buffer-local 命令，仅在打开项目缓冲区时注册，
+" 在 -E -s 无头模式下不可用。改为检查插件已加载（g:gutentags_enabled 存在）。
+if exists('g:gutentags_enabled')
+  call s:report('PASS', 'vim-gutentags 插件已加载', '')
+else
+  call s:report('FAIL', 'vim-gutentags 插件', '运行 make plugins')
+endif
 
 try
   colorscheme molokai
@@ -623,8 +677,14 @@ catch
   call s:report('WARN', ':help myvim 不可用', '运行 make help')
 endtry
 
+" 把累计报告输出到 stdout（-s 模式下 echom 不进 stdout，必须借 :! 打印）
+let s:reportfile = tempname()
+call writefile(s:lines, s:reportfile)
+execute '!' . 'cat ' . shellescape(s:reportfile)
+call delete(s:reportfile)
+
 if s:fail
-  cquit
+  cquit 1
 endif
 quit
 ```
@@ -632,22 +692,28 @@ quit
 - [ ] **Step 3: 运行完整 make verify**
 
 Run: `make verify; echo "exit=$?"`
-Expected: 每项一行 PASS/WARN；本机预期 WARN：`instant-markdown-d`（若未全局安装）、`vim 无 python3`、`YCM 未编译`；无 FAIL；`exit=0`
+Expected: 每项一行 PASS/WARN；本机预期 WARN：`fzf 缺失`、`rg 缺失`、`instant-markdown-d 缺失`、`vim 无 python3`、`YCM 未编译`；无 FAIL；`exit=0`
+（注：本机 `ctags` 是 BSD 系统自带 exuberant-ctags 兼容二进制，`verify.sh` 只验存在性 → PASS；真正的 ctags 兼容性由 .vimrc 守卫在运行时处理。）
 
 - [ ] **Step 4: 验证 FAIL 会使退出码非 0（临时破坏法）**
+
+> 注意：`make verify` 的依赖链含 `30-plugins.sh`，会自动 `PluginInstall` 把移走的 vim-fugitive 克隆回来，
+> 导致直接 `make verify` 看不到 FAIL。要观察 FAIL，必须跳过安装步骤、直接调用 verify.vim。
 
 Run:
 ```bash
 mv ~/.vim/bundle/vim-fugitive /tmp/vim-fugitive-save
-make verify; echo "exit=$?"
+bash scripts/verify.sh >/dev/null 2>&1
+vim -E -s -S scripts/verify.vim </dev/null; echo "verify.vim exit=$?"
 mv /tmp/vim-fugitive-save ~/.vim/bundle/vim-fugitive
+make verify >/dev/null 2>&1; echo "exit-after-restore=$?"
 ```
-Expected: 输出含 `[FAIL] :Git`，`exit=2`（make 报告 Error）；恢复目录后 `make verify` 重新通过
+Expected: 输出含 `[FAIL] :Git → vim-fugitive 未装上？运行 make plugins`，`verify.vim exit=1`；恢复目录后 `make verify` 重新通过 `exit=0`
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add scripts/verify.sh scripts/verify.vim
+git add scripts/verify.sh scripts/verify.vim docs/superpowers/plans/2026-08-02-one-click-install.md
 git commit -m "Add two-layer make verify: external deps + plugin capability smoke tests"
 ```
 
@@ -746,3 +812,136 @@ Expected: 无输出（doc/tags、bundle/* 均被忽略）
 - Spec 覆盖：spec §1（安装体系）→ Task 1-4；§2（.vimrc 增强）→ Task 6；§3（verify）→ Task 7；§4（help 文档）→ Task 5；§5（README）→ Task 8；验证计划 → Task 9。无缺口。
 - 占位符扫描：无 TBD/TODO；所有代码块为完整内容。
 - 一致性：Makefile 的 verify 目标调用 `scripts/verify.sh` + `scripts/verify.vim`，与 Task 7 文件名一致；`make help` 的 helptags 路径与 doc/ 位置一致；verify.vim 检查的插件与 Task 6 新增插件一致。
+
+---
+
+### Task 10: python3 提前检测 + 条件插件 + make ycm
+
+**背景：** 在 vim 缺少 `+python3` 的机器（如 macOS 自带 vim）上，原安装流程仍会克隆 YCM（178MB），并在每次 vim 启动时报 `YouCompleteMe unavailable`；WARN 只在 install 末尾出现。本任务：提前检测、按条件声明插件、提供 opt-in `make ycm` 编译目标。
+
+**Files:**
+- Create: `scripts/install.d/00-preflight.sh`
+- Create: `scripts/install.d/50-ycm.sh`
+- Modify: `Makefile`（preflight 作链头；新增 ycm 目标）
+- Modify: `.vimrc`（YCM/UltiSnips 声明包入 `if has('python3')`）
+- Modify: `scripts/verify.vim`（python3/YCM 检查嵌套）
+- Modify: `doc/myvim.txt`、`README.md`
+
+**Change 1: `scripts/install.d/00-preflight.sh`**
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(dirname "$0")/../common.sh"
+
+require_cmd git "brew install git"
+require_cmd vim "brew install vim"
+
+# 提前检测 python3（YCM/UltiSnips 的硬性前提），不满足则提前提示
+if vim -E -s -c "if !has('python3') | cquit | endif" -c "qa" </dev/null >/dev/null 2>&1; then
+  ok "vim 支持 python3"
+else
+  warn "当前 vim 无 python3 支持，YCM/UltiSnips 将被跳过 → brew install vim"
+fi
+```
+
+**Change 2: `Makefile`** — `.PHONY` 增 `preflight ycm`；新增 `preflight` 目标；`submodules: preflight`；尾部新增独立 `ycm` 目标（不进 install 链）：
+
+```makefile
+preflight:
+	bash $(INSTALL_DIR)/00-preflight.sh
+
+submodules: preflight
+	bash $(INSTALL_DIR)/10-submodules.sh
+
+...
+
+ycm:
+	bash $(INSTALL_DIR)/50-ycm.sh
+```
+
+**Change 3: `scripts/install.d/50-ycm.sh`**
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(dirname "$0")/../common.sh"
+
+YCM_DIR="$HOME/.vim/bundle/YouCompleteMe"
+
+# 探测契约：无 python3 时 cquit 以非 0 退出；有 python3 时跳过 cquit，qa 正常退出 0
+if ! vim -E -s -c "if !has('python3') | cquit | endif" -c "qa" </dev/null >/dev/null 2>&1; then
+  err "vim 无 python3 支持，无法编译/使用 YCM → brew install vim"
+  exit 1
+fi
+
+if [ ! -d "$YCM_DIR" ]; then
+  info "YCM 未安装，先运行插件安装..."
+  bash "$(dirname "$0")/30-plugins.sh"
+fi
+
+if [ ! -d "$YCM_DIR/third_party/ycmd" ]; then
+  err "YCM 克隆不完整（缺 third_party/ycmd），请重试 make plugins"
+  exit 1
+fi
+
+if compgen -G "$YCM_DIR/third_party/ycmd/ycm_core*" >/dev/null; then
+  ok "YCM 已编译，跳过"
+  exit 0
+fi
+
+require_cmd python3 "brew install python"
+require_cmd cmake "brew install cmake"
+
+info "编译 YouCompleteMe（可能需要几分钟）..."
+(cd "$YCM_DIR" && ./install.py --clangd-completer)
+ok "YCM 编译完成"
+```
+
+**Change 4: `.vimrc`** — 原 4 行无条件 YCM/UltiSnips 声明包入条件：
+
+```vim
+" ycm + ultisnips（需 vim +python3，否则跳过声明，见 make verify 提示）
+if has('python3')
+  Plugin 'Valloric/YouCompleteMe'
+  Plugin 'rdnetto/YCM-Generator'
+  Plugin 'SirVer/ultisnips'
+  Plugin 'honza/vim-snippets'
+endif
+```
+
+后续 `g:ycm_*` / UltiSnips 设置块未改（插件缺失时无害）。
+
+**Change 5: `scripts/verify.vim`** — python3/YCM 检查改为嵌套（无 python3 时只一行 WARN，不再单独报 YCM 未编译）：
+
+```vim
+if has('python3')
+  call s:report('PASS', 'vim +python3', '')
+  if empty(glob(expand('~/.vim/bundle/YouCompleteMe/third_party/ycmd/ycm_core*')))
+    call s:report('WARN', 'YCM 未编译', 'make ycm')
+  else
+    call s:report('PASS', 'YCM 已编译', '')
+  endif
+else
+  call s:report('WARN', 'vim 无 python3，YCM/UltiSnips 已按条件跳过', 'brew install vim')
+endif
+```
+
+**Change 6/7:** `doc/myvim.txt` YouCompleteMe 行改为 `（需 vim +python3，否则不声明；编译用 make ycm）`，UltiSnips 行改为 `（需 python3，否则不声明）`；`README.md` 常用 make 目标表新增 `| make ycm | 编译 YouCompleteMe（需 vim +python3，幂等） |`。
+
+
+### Task 11: 可选依赖自动安装（make deps）
+
+**背景：** 用户要求将 verify 提示的可选依赖（fzf / ripgrep / instant-markdown-d）纳入安装流程，替代手动安装。
+
+**Files:**
+- Create: `scripts/install.d/05-deps.sh`
+- Modify: `Makefile`（deps 目标插入链中：preflight → deps → submodules）
+- Modify: `scripts/verify.sh`（fzf/rg/instant-markdown-d 提示改为 `make deps`）
+- Modify: `README.md`（前置依赖移除 fzf/ripgrep，目标表加 deps 行）
+
+**行为约定：**
+- 检测包管理器：brew（macOS）/ apt-get（Linux，非 root 自动加 sudo）；都无 → WARN 跳过
+- 幂等：`have <cmd>` 已存在则跳过
+- 错误分级：均为可选能力，安装失败只 WARN 不中断 install（verify 兜底）
+- instant-markdown-d 走 `npm -g install`；无 npm → WARN 跳过并提示装 node
