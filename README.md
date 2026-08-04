@@ -16,13 +16,13 @@ this is the vim configuration
 * ./configure --with-features=huge --enable-multibyte --enable-rubyinterp=yes --enable-python3interp=yes --enable-perlinterp=yes --enable-luainterp=yes
 * sudo make install
 
-注意：YCM/UltiSnips 需要 python3 支持，编译后可用 `vim --version | grep python3` 确认是 `+python3`。
+注意：UltiSnips 需要 python3 支持，编译后可用 `vim --version | grep python3` 确认是 `+python3`。
 
 ## install myvim
 
 ### 前置依赖
 
-macOS（推荐用 brew 安装的 vim，自带 vim 无 python3，YCM/UltiSnips 不可用）：
+macOS（推荐用 brew 安装的 vim，自带 vim 无 python3，UltiSnips 不可用）：
 
 ```
 brew install git vim ctags node
@@ -36,7 +36,7 @@ sudo apt-get install -y git vim exuberant-ctags nodejs npm
 
 fzf、ripgrep、instant-markdown-d 由 `make install` 自动安装（检测 brew/apt-get，失败仅 WARN 不中断）；也可单独 `make deps` 触发。
 
-注意：Ubuntu 默认的 vim 可能不含 python3 支持（可改装 vim-nox），否则 YCM/UltiSnips 不可用；`make verify` 会检测并提示。
+注意：Ubuntu 默认的 vim 可能不含 python3 支持（可改装 vim-nox），否则 UltiSnips 不可用；`make verify` 会检测并提示。
 
 ### 一键安装
 
@@ -56,7 +56,7 @@ make install    # 或 sh init.sh（兼容入口）
 | `make deps` | 自动安装可选依赖 fzf / ripgrep / instant-markdown-d（brew/apt-get，幂等） |
 | `make update` | 更新子模块与全部插件（更新后建议 `make verify` 复检） |
 | `make verify` | 分层验证：外部依赖 + 插件能力冒烟测试 |
-| `make ycm` | 编译 YouCompleteMe（需 vim +python3，幂等） |
+| `make coding` | 安装 LSP servers + 格式化器（pyright/gopls/jdtls/clang-format/black/google-java-format/prettier；不进入 make install 主流程） |
 | `make plugins` / `help` | 单独执行某一步 |
 
 ### 新增插件约定
@@ -66,18 +66,39 @@ make install    # 或 sh init.sh（兼容入口）
 1. `scripts/verify.vim` 加一行能力检查
 2. `doc/myvim.txt` 加一节说明（`:help myvim`）
 
+### 已安装插件一览
+
+`make install` 后，以下插件克隆到 `~/.vim/plugged/`。带 ⚡ 的按文件类型延迟加载（打开对应文件才加载，加快启动）。各插件的命令与快捷键详见 `:help myvim`。
+
+| 类别 | 插件 |
+|---|---|
+| 补全 / 片段 | ultisnips *, vim-snippets * |
+| LSP / Go 开发 | vim-lsp, asyncomplete.vim, vim-go |
+| 文件 / 跳转 | nerdtree, nerdtree-git-plugin, tagbar, fzf, fzf.vim, vim-fswitch ⚡, vim-gutentags |
+| Git | vim-fugitive |
+| 编辑增强 | auto-pairs, nerdcommenter, tabular ⚡ |
+| 语言支持 | vim-cpp-enhanced-highlight ⚡, pangloss/vim-javascript ⚡, moll/vim-node ⚡, vim-markdown ⚡, vim-instant-markdown ⚡ |
+| 界面 / 格式化 | vim-airline, vim-indent-guides, vim-codefmt, vim-maktaba, vim-glaive, molokai（配色，独立文件 + submodule） |
+
+带 * 的需 `vim +python3`（macOS 自带 vim 无，须 `brew install vim`）。`.vimrc` 中 `if has('python3')` 守卫会自动跳过未满足的声明，不影响其他插件。带 ⚡ 的按文件类型延迟加载。
+
 ## plugins
 
-### [YouCompleteMe](https://github.com/Valloric/YouCompleteMe)
+### LSP servers (vim-lsp + pyright/gopls/jdtls/clangd)
 
-YCM本身需要编译之后才能使用，所以每次更新之后都要重新编译
+**重要**：`make install` 只克隆 vim 插件到 `~/.vim/plugged/`，**不装** LSP servers 与格式化器。要使用语义补全、跳转、code action 等现代 IDE 能力，必须单独执行：
 
 ```
-cd ~/.vim/plugged/YouCompleteMe
-./install.py --clangd-completer
+make coding    # 装 pyright/gopls/jdtls LSP servers + clang-format/black/google-java-format/prettier 格式化器
 ```
 
-*tips*：`--clangd-completer` 是轻量可靠的默认选择；如需更多语言支持可改用 `--all`，但必须确保 `xbuild, go, tsserver, node, npm, rustc, and cargo tools are installed and in your PATH`。
+各组件来源：
+- `clangd`（C++）：系统自带（Xcode CLT），无需 `make coding`
+- `pyright`（Python）：npm registry，`npm install -g pyright`
+- `gopls`（Go）：proxy.golang.org，`go install golang.org/x/tools/gopls@latest`
+- `jdtls`（Java）：brew bottle / ghcr.io，`brew install jdtls`
+
+`make coding` 幂等，已装的组件会跳过。完成后 `make verify` 中相关 `[WARN]` 全部转为 `[PASS]`。
 
 ### [vim-instant-markdown](https://github.com/suan/vim-instant-markdown)
 
