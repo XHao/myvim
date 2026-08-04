@@ -34,6 +34,7 @@ function! s:check_cmd(cmd, hint) abort
   endif
 endfunction
 
+call s:check_cmd('PlugInstall', 'vim-plug 未加载？检查 autoload/plug.vim')
 call s:check_cmd('NERDTreeToggle', '运行 make plugins')
 call s:check_cmd('TagbarToggle', '运行 make plugins')
 call s:check_cmd('Files', 'junegunn/fzf 未装上？运行 make plugins')
@@ -57,7 +58,7 @@ endtry
 
 if has('python3')
   call s:report('PASS', 'vim +python3', '')
-  if empty(glob(expand('~/.vim/bundle/YouCompleteMe/third_party/ycmd/ycm_core*')))
+  if empty(glob(expand('~/.vim/plugged/YouCompleteMe/third_party/ycmd/ycm_core*')))
     call s:report('WARN', 'YCM 未编译', 'make ycm')
   else
     call s:report('PASS', 'YCM 已编译', '')

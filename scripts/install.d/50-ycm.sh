@@ -2,7 +2,7 @@
 set -euo pipefail
 source "$(dirname "$0")/../common.sh"
 
-YCM_DIR="$HOME/.vim/bundle/YouCompleteMe"
+YCM_DIR="$HOME/.vim/plugged/YouCompleteMe"
 
 # 探测契约：无 python3 时 cquit 以非 0 退出；有 python3 时跳过 cquit，qa 正常退出 0
 if ! vim -E -s -c "if !has('python3') | cquit | endif" -c "qa" </dev/null >/dev/null 2>&1; then

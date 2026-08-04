@@ -1,4 +1,4 @@
-.PHONY: install submodules vimrc plugins tern help update verify preflight deps ycm
+.PHONY: install submodules vimrc plugins help update verify preflight deps ycm
 
 INSTALL_DIR := scripts/install.d
 
@@ -21,16 +21,13 @@ vimrc: submodules
 plugins: vimrc
 	bash $(INSTALL_DIR)/30-plugins.sh
 
-tern: plugins
-	bash $(INSTALL_DIR)/40-tern.sh
-
-help: tern
+help: plugins
 	vim -E -s -c 'helptags $$HOME/.vim/doc' -c "qa" </dev/null
 	@echo "[ OK ] doc/tags 已生成"
 
 update:
 	git submodule update --init
-	vim -E -s -c 'source $$HOME/.vimrc' -c "PluginInstall!" -c "qa" </dev/null
+	vim -E -s -c 'source $$HOME/.vimrc' -c "PlugUpdate --sync" -c "qa" </dev/null
 
 verify: help
 	bash scripts/verify.sh
