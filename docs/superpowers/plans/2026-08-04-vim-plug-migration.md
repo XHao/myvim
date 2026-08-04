@@ -27,7 +27,7 @@
 - Modify: `.gitignore`（删 `autoload/`，加 `plugged/`）
 - Remove: `bundle/Vundle.vim` gitlink
 
-- [ ] **Step 1: 下载 plug.vim**
+- [x] **Step 1: 下载 plug.vim**
 
 Run:
 ```bash
@@ -36,7 +36,7 @@ curl -fLo /Users/shako/.vim/autoload/plug.vim https://raw.githubusercontent.com/
 ```
 Expected: 无错误输出；`head -3 autoload/plug.vim` 显示 vim-plug 文件头注释
 
-- [ ] **Step 2: 移除 Vundle 子模块**
+- [x] **Step 2: 移除 Vundle 子模块**
 
 Run:
 ```bash
@@ -46,7 +46,7 @@ git rm -f bundle/Vundle.vim
 ```
 Expected: `.gitmodules` 只剩 molokai 条目；`git ls-files | grep -c bundle` 输出 0
 
-- [ ] **Step 3: 调整 .gitignore**
+- [x] **Step 3: 调整 .gitignore**
 
 删除 `autoload/` 行（否则 plug.vim 无法被 git 跟踪），在 `bundle/*` 行后新增 `plugged/`。改后相关部分：
 
@@ -56,7 +56,7 @@ plugged/
 .DS_Store
 ```
 
-- [ ] **Step 4: 验证**
+- [x] **Step 4: 验证**
 
 Run:
 ```bash
@@ -66,7 +66,7 @@ grep -n 'plugged' .gitignore
 ```
 Expected: check-ignore 无匹配输出且 `exit=1`（即不被忽略）；.gitignore 含 `plugged/` 行
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add autoload/plug.vim .gitmodules .gitignore
