@@ -24,13 +24,16 @@ set nocompatible              " be iMproved, required
 " vim-plug 插件管理（plug.vim 已 vendor 在 ~/.vim/autoload/）
 call plug#begin('~/.vim/plugged')
 
-" ycm + ultisnips（需 vim +python3，否则跳过声明，见 make verify 提示）
+" ultisnips（需 vim +python3，否则跳过声明）
 if has('python3')
-  Plug 'Valloric/YouCompleteMe'
-  Plug 'rdnetto/YCM-Generator'
   Plug 'SirVer/ultisnips'
   Plug 'honza/vim-snippets'
 endif
+
+" vim-lsp + asynccomplete + vim-go（全 LSP 架构，替代 YCM）
+Plug 'prabirshrestha/vim-lsp'
+Plug 'prabirshrestha/asynccomplete.vim'
+Plug 'fatih/vim-go', { 'for': 'go' }
 
 Plug 'vim-airline/vim-airline'
 Plug 'moll/vim-node', { 'for': 'javascript' }
@@ -66,6 +69,38 @@ Plug 'ludovicchabant/vim-gutentags'
 Plug 'scrooloose/nerdcommenter'
 
 call plug#end()            " required
+
+" vim-lsp server 注册（各 server 由 make coding 装，clangd 系统自带）
+augroup lsp_setup
+  autocmd!
+  autocmd User lsp_setup call lsp#register_server(#{
+    \ name: 'clangd',
+    \ cmd: ['clangd', '--background-index', '--clang-tidy'],
+    \ allowlist: ['c', 'cpp', 'objc', 'objcpp']})
+
+  autocmd User lsp_setup call lsp#register_server(#{
+    \ name: 'pyright',
+    \ cmd: ['pyright-langserver', '--stdio'],
+    \ allowlist: ['python']})
+
+  autocmd User lsp_setup call lsp#register_server(#{
+    \ name: 'gopls',
+    \ cmd: ['gopls', 'serve'],
+    \ allowlist: ['go', 'gomod', 'gowork']})
+
+  autocmd User lsp_setup call lsp#register_server(#{
+    \ name: 'jdtls',
+    \ cmd: ['jdtls'],
+    \ allowlist: ['java']})
+augroup END
+
+" vim-go 配置（与 vim-lsp 协作，gopls 作 LSP 来源）
+let g:go_def_mode = 'gopls'
+let g:go_gopls_enabled = 1
+
+" 保存时格式化（vim-lsp sync format）
+let g:lsp_format_sync_timeout = 1000
+
 filetype plugin indent on  " required
 
 
@@ -118,33 +153,12 @@ let g:NERDTreeGitStatusIndicatorMapCustom = {
             \ "Unknown"   : "?"
             \ }
 
-"YCM
-let g:ycm_global_ycm_extra_conf = '~/.vim/plugged/YouCompleteMe/third_party/ycmd/.ycm_extra_conf.py'
-let g:ycm_goto_buffer_command = 'vertical-split'
-" 补全功能在注释中同样有效
-let g:ycm_complete_in_comments=1
-" 允许 vim 加载 .ycm_extra_conf.py 文件，不再提示
-let g:ycm_confirm_extra_conf=0
-" 开启 YCM 标签补全引擎
-let g:ycm_collect_identifiers_from_tags_files=1
-" YCM 集成 OmniCppComplete 补全引擎，设置其快捷键
-inoremap <leader>; <C-x><C-o>
-" " 补全内容不以分割子窗口形式出现，只显示补全列表
-set completeopt-=preview
-" 从第一个键入字符就开始罗列匹配项
-let g:ycm_min_num_of_chars_for_completion=1
-" 禁止缓存匹配项，每次都重新生成匹配项
-let g:ycm_cache_omnifunc=0
-" 语法关键字补全         
-let g:ycm_seed_identifiers_with_syntax=1
-
-" vim intent 
+" vim intent
 let g:indent_guides_enable_on_vim_startup=1
 let g:indent_guides_start_level=2
 let g:indent_guides_guide_size=1
 
-" Trigger configuration. Do not use <tab> if you use
-" https://github.com/Valloric/YouCompleteMe.
+" Trigger configuration（<leader><tab> 展开/跳片段）
 let g:UltiSnipsExpandTrigger="<leader><tab>"
 let g:UltiSnipsJumpForwardTrigger="<leader><tab>"
 let g:UltiSnipsJumpBackwardTrigger="<leader><s-tab>"
@@ -199,9 +213,18 @@ nnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
 nmap <C-t> :TagbarToggle<CR>
 nmap <C-n> :NERDTreeToggle<CR>
 
-nnoremap <leader>jc :YcmCompleter GoToDeclaration<CR>
-nnoremap <leader>jd :YcmCompleter GoToDefinition<CR>
-nnoremap <leader>ji :YcmCompleter GoToInclude<CR>
+" LSP 通用键绑定（vim-lsp，替代 YCM 的 YcmCompleter）
+nnoremap <leader>jd  :LspDefinition<CR>
+nnoremap <leader>jc  :LspDeclaration<CR>
+nnoremap <leader>ji  :LspImplementation<CR>
+nnoremap <leader>jr  :LspReferences<CR>
+nnoremap <leader>ca  :LspCodeAction<CR>
+nnoremap <leader>rn  :LspRename<CR>
+nnoremap K           :LspHover<CR>
+nnoremap [d          :LspPreviousDiagnostic<CR>
+nnoremap ]d          :LspNextDiagnostic<CR>
+nnoremap <leader>dl  :LspDocumentSymbol<CR>
+nnoremap <leader>wl  :LspWorkspaceSymbol<CR>
 
 " .cpp <-> .h, plugin vim-fswitch
 nmap <silent> <Leader>swi :FSHere<cr>
