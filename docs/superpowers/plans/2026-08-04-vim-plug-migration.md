@@ -80,7 +80,7 @@ git commit -m "Vendor vim-plug; remove Vundle submodule"
 **Files:**
 - Modify: `.vimrc`
 
-- [ ] **Step 1: 替换插件管理块**
+- [x] **Step 1: 替换插件管理块**
 
 将 .vimrc 中（约 22-81 行）从 `set nocompatible` 到 `filetype plugin indent on    " required"` 的整段 Vundle 块替换为：
 
@@ -129,7 +129,7 @@ filetype plugin indent on
 - 删除被移除插件的声明：tern_for_vim、vim-javacomplete2、jelera/vim-javascript-syntax、单名 `node`
 - 保留原注释结构（fzf/gutentags 等中文注释按需保留在对应 Plug 行上方）
 
-- [ ] **Step 2: 删除 tern 配置与 JavaScriptFold**
+- [x] **Step 2: 删除 tern 配置与 JavaScriptFold**
 
 删除以下行：
 ```vim
@@ -141,17 +141,17 @@ autocmd FileType javascript nnoremap <leader>d :TernDef<CR>
 au FileType javascript call JavaScriptFold()
 ```
 
-- [ ] **Step 3: YCM extra_conf 路径改 plugged**
+- [x] **Step 3: YCM extra_conf 路径改 plugged**
 
 ```vim
 let g:ycm_global_ycm_extra_conf = '~/.vim/plugged/YouCompleteMe/third_party/ycmd/.ycm_extra_conf.py'
 ```
 
-- [ ] **Step 4: 去重 filetype**
+- [x] **Step 4: 去重 filetype**
 
 确认全文只有一处 `filetype plugin indent on`（原文件有两处，删第二处）。
 
-- [ ] **Step 5: 验证无头加载无报错**
+- [x] **Step 5: 验证无头加载无报错**
 
 Run:
 ```bash
@@ -159,7 +159,7 @@ vim -E -s -c 'source $HOME/.vimrc' -c 'verbose echo exists(":PlugInstall")' -c '
 ```
 Expected: 输出 `2`（命令存在）；无 E 开头错误（此时 plugged/ 为空属正常，plug 不报错）
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add .vimrc
