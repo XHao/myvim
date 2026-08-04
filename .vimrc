@@ -32,8 +32,8 @@ endif
 
 " vim-lsp + asynccomplete + vim-go（全 LSP 架构，替代 YCM）
 Plug 'prabirshrestha/vim-lsp'
-Plug 'prabirshrestha/asynccomplete.vim'
-Plug 'fatih/vim-go', { 'for': 'go' }
+Plug 'prabirshrestha/asyncomplete.vim'
+Plug 'fatih/vim-go'
 
 Plug 'vim-airline/vim-airline'
 Plug 'moll/vim-node', { 'for': 'javascript' }

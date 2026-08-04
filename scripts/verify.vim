@@ -41,6 +41,16 @@ call s:check_cmd('Files', 'junegunn/fzf 未装上？运行 make plugins')
 call s:check_cmd('Rg', 'fzf.vim 未装上？运行 make plugins')
 call s:check_cmd('Git', 'vim-fugitive 未装上？运行 make plugins')
 call s:check_cmd('AutoFormatBuffer', 'vim-codefmt 未装上？运行 make plugins')
+call s:check_cmd('LspDefinition',  'vim-lsp 未加载？运行 make plugins')
+call s:check_cmd('LspCodeAction',  'vim-lsp 未加载？运行 make plugins')
+call s:check_cmd('LspHover',       'vim-lsp 未加载？运行 make plugins')
+" vim-go 的 :GoBuild 等命令在 ftplugin 中,仅 FileType go 触发时注册;
+" 无头模式不打开 .go 文件则命令不存在,改用 plugin/go.vim 设置的全局变量检测
+if exists('g:go_loaded_install')
+  call s:report('PASS', 'vim-go 插件已加载', '')
+else
+  call s:report('FAIL', 'vim-go 插件', '运行 make plugins')
+endif
 " GutentagsUpdate 是 buffer-local 命令，仅在打开项目缓冲区时注册，
 " 在 -E -s 无头模式下不可用。改为检查插件已加载（g:gutentags_enabled 存在）。
 if exists('g:gutentags_enabled')
@@ -58,13 +68,8 @@ endtry
 
 if has('python3')
   call s:report('PASS', 'vim +python3', '')
-  if empty(glob(expand('~/.vim/plugged/YouCompleteMe/third_party/ycmd/ycm_core*')))
-    call s:report('WARN', 'YCM 未编译', 'make ycm')
-  else
-    call s:report('PASS', 'YCM 已编译', '')
-  endif
 else
-  call s:report('WARN', 'vim 无 python3，YCM/UltiSnips 已按条件跳过', 'brew install vim')
+  call s:report('WARN', 'vim 无 python3，UltiSnips 已按条件跳过', 'brew install vim')
 endif
 
 let s:tagdir = expand('~/.cache/tags')

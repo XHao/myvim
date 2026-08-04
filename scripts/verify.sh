@@ -24,5 +24,13 @@ check_bin ctags  "brew install ctags"                   WARN
 check_bin node   "brew install node"                    WARN
 check_bin npm    "brew install node"                    WARN
 check_bin instant-markdown-d "make deps"                WARN
+check_bin clangd              "xcode-select --install"   WARN
+check_bin pyright             "make coding"             WARN
+check_bin gopls               "make coding"             WARN
+check_bin jdtls               "make coding"             WARN
+check_bin clang-format       "make coding"             WARN
+check_bin black              "make coding"             WARN
+check_bin google-java-format "make coding"             WARN
+check_bin prettier           "make coding"             WARN
 
 exit $FAILED
