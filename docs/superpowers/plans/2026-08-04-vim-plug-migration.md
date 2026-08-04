@@ -254,7 +254,7 @@ git commit -m "Adapt install scripts to vim-plug; drop tern step"
 - Modify: `README.md`
 - Modify: `doc/myvim.txt`
 
-- [ ] **Step 1: README 改动**
+- [x] **Step 1: README 改动**
 
 - 「插件由 Vundle 安装」→「插件由 vim-plug 安装」
 - make 目标表删除 `make plugins` 行中的 tern 提及；`make install` 描述中「→ tern →」删除
@@ -268,14 +268,14 @@ git commit -m "Adapt install scripts to vim-plug; drop tern step"
 升级后旧目录可手动删除：`rm -rf ~/.vim/bundle`
 ```
 
-- [ ] **Step 2: doc/myvim.txt 改动**
+- [x] **Step 2: doc/myvim.txt 改动**
 
 - 删除 tern_for_vim、vim-javacomplete2、vim-javascript-syntax 相关小节
 - 新增 pangloss/vim-javascript 一行说明
 - 插件管理命令说明改为 `:PlugInstall` / `:PlugUpdate` / `:PlugStatus`
 - 文件内所有 bundle 路径引用改 plugged
 
-- [ ] **Step 3: 验证**
+- [x] **Step 3: 验证**
 
 Run:
 ```bash
@@ -283,7 +283,7 @@ grep -in 'vundle\|tern\|javacomplete\|bundle/' README.md doc/myvim.txt | grep -v
 ```
 Expected: 无输出（除迁移说明段外无残留）
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add README.md doc/myvim.txt
@@ -296,7 +296,7 @@ git commit -m "Update docs for vim-plug migration"
 
 **Files:** 无（纯验证）
 
-- [ ] **Step 1: 全新安装（brew vim，含 python3）**
+- [x] **Step 1: 全新安装（brew vim，含 python3）**
 
 Run:
 ```bash
@@ -304,7 +304,7 @@ PATH=/opt/homebrew/bin:$PATH make -C /Users/shako/.vim install 2>&1 | tail -30
 ```
 Expected: 插件并行克隆到 plugged/；preflight 显示 `[ OK ] vim 支持 python3`；verify 段 python3/YCM 检查为 PASS 或「YCM 未编译 → make ycm」WARN；退出码 0
 
-- [ ] **Step 2: 幂等复跑**
+- [x] **Step 2: 幂等复跑**
 
 Run:
 ```bash
@@ -313,28 +313,29 @@ echo "exit=$?"
 ```
 Expected: 多个"跳过"；退出码 0
 
-- [ ] **Step 3: 延迟加载验证**
+- [x] **Step 3: 延迟加载验证**
 
 Run:
 ```bash
 cd /tmp && echo 'var x = 1;' > t.js && echo '# hi' > t.md
-PATH=/opt/homebrew/bin:$PATH vim -E -s -c 'edit /tmp/t.js' -c 'redir! > /tmp/js-scripts | silent scriptnames | redir END | qa' </dev/null
+PATH=/opt/homebrew/bin:$PATH vim -E -s -c 'source $HOME/.vimrc' -c 'edit /tmp/t.js' -c 'redir! > /tmp/js-scripts | silent scriptnames | redir END | qa' </dev/null
 grep -c 'vim-javascript' /tmp/js-scripts
-PATH=/opt/homebrew/bin:$PATH vim -E -s -c 'redir! > /tmp/nojs-scripts | silent scriptnames | redir END | qa' </dev/null
-grep -c 'vim-javascript' /tmp/nojs-scripts; echo "（应为 0）"
+PATH=/opt/homebrew/bin:$PATH vim -E -s -c 'source $HOME/.vimrc' -c 'redir! > /tmp/nojs-scripts | silent scriptnames | redir END | qa' </dev/null
+grep -c 'vim-javascript' /tmp/nojs-scripts; echo "（含 ftdetect，期望 2）"
 ```
-Expected: 打开 .js 后 vim-javascript 已加载（≥1）；未打开时为 0
+Expected: 打开 .js 后 vim-javascript 已加载（≥5，含 ftplugin/syntax/indent/after/ftdetect）；未打开时为 2（vim-plug 的 ftdetect 脚本在 plug#end 时被 eager 加载以便 FileType 检测工作，这是设计行为，非 bug）。**修正：原计划漏写 `source $HOME/.vimrc`，-E -s 模式不自动 source vimrc，无该行则完全无插件加载。**
 
-- [ ] **Step 4: 启动与帮助**
+- [x] **Step 4: 启动与帮助**
 
 Run:
 ```bash
 PATH=/opt/homebrew/bin:$PATH vim -E -s -c 'qa' </dev/null 2>&1 | head -5
-PATH=/opt/homebrew/bin:$PATH vim -E -s -c 'help myvim' -c 'echo expand("%:t")' -c 'qa' </dev/null 2>&1 | tail -1
+PATH=/opt/homebrew/bin:$PATH vim -E -s -c 'redir! > /tmp/help.out' -c 'help myvim' -c 'echo expand("%:t")' -c 'redir END' -c 'qa' </dev/null 2>&1
+cat /tmp/help.out
 ```
-Expected: 启动无错误输出；help 打开 myvim.txt
+Expected: 启动无错误输出；help 打开 myvim.txt（`cat /tmp/help.out` 末行输出 `myvim.txt`）。**修正：-E -s 模式下 `:echo` 不写到 stdout，必须用 `:redir` 捕获；原计划 `tail -1` 命令无法捕获到 echo 输出。**
 
-- [ ] **Step 5: 更新本计划文档勾选状态，提交**
+- [x] **Step 5: 更新本计划文档勾选状态，提交**
 
 ```bash
 git add docs/superpowers/plans/2026-08-04-vim-plug-migration.md
