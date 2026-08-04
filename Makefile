@@ -1,4 +1,4 @@
-.PHONY: install submodules vimrc plugins help update verify preflight deps ycm
+.PHONY: install submodules vimrc plugins help update verify preflight deps coding
 
 INSTALL_DIR := scripts/install.d
 
@@ -33,5 +33,5 @@ verify: help
 	bash scripts/verify.sh
 	vim -E -s -S scripts/verify.vim </dev/null
 
-ycm:
-	bash $(INSTALL_DIR)/50-ycm.sh
+coding: plugins
+	bash $(INSTALL_DIR)/60-coding.sh
