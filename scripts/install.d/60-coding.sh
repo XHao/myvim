@@ -31,7 +31,17 @@ install_pyright() {
 install_gopls() {
   have gopls && { ok "gopls 已安装，跳过"; return 0; }
   info "装 gopls (Go LSP, 走 proxy.golang.org)..."
-  go install golang.org/x/tools/gopls@latest && ok "gopls 安装完成" || warn "gopls 安装失败 → 检查 proxy.golang.org 可达性或切 VPN"
+  if go install golang.org/x/tools/gopls@latest; then
+    # go install 装到 $GOPATH/bin(默认 ~/go/bin),多数 shell 默认不在 PATH 中
+    # symlink 到 /opt/homebrew/bin(brew 用户 PATH 必经路径),免手动改 shell 配置
+    GO_BIN="$(go env GOPATH)/bin"
+    if [ -d "$GO_BIN" ] && [ -w /opt/homebrew/bin ]; then
+      ln -sf "$GO_BIN/gopls" /opt/homebrew/bin/gopls 2>/dev/null || true
+    fi
+    have gopls && ok "gopls 安装完成" || warn "gopls 已装到 $GO_BIN 但不在 PATH → 加 export PATH=\"$HOME/go/bin:\$PATH\" 到 ~/.zshrc"
+  else
+    warn "gopls 安装失败 → 检查 proxy.golang.org 可达性或切 VPN"
+  fi
 }
 
 install_jdtls() {
