@@ -1,4 +1,5 @@
 bundle/*
+plugged/
 .DS_Store
 */.DS_Store
 *.bak
@@ -8,7 +9,6 @@ ftplugin/
 plugin/
 syntax/
 c-support/
-autoload/
 c-support.zip
 templates/
 doc/tags
