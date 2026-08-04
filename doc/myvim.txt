@@ -4,12 +4,13 @@
 新增插件时请同步维护本文档与 scripts/verify.vim。
 
 ==============================================================================
-1. 插件管理                                                   *myvim-vundle*
+1. 插件管理                                                    *myvim-plug*
 
-Vundle.vim          插件管理器
-  :PluginInstall    安装 .vimrc 中声明的插件
-  :PluginInstall!   更新全部插件
-  :PluginClean      清理未声明的插件
+vim-plug            插件管理器
+  :PlugInstall      安装 .vimrc 中声明的插件
+  :PlugUpdate       更新全部插件
+  :PlugClean        清理未声明的插件
+  :PlugStatus       查看插件状态
 
 ==============================================================================
 2. 补全与片段                                                *myvim-complete*
@@ -56,12 +57,9 @@ vim-surround 未装；自动配对由 auto-pairs 负责
 6. 语言支持                                               *myvim-languages*
 
 vim-cpp-enhanced-highlight   C++ 增强高亮
-vim-javacomplete2            Java 补全
-vim-javascript-syntax        JS 语法高亮
-tern_for_vim                 JS 跳转（<leader>d → TernDef，需 npm install）
-node                         node 文件类型支持
-vim-markdown                 Markdown 高亮/折叠
-vim-instant-markdown         浏览器实时预览（需 instant-markdown-d）
+pangloss/vim-javascript      JS 语法高亮/缩进（懒加载，编辑 .js 时才加载）
+vim-markdown                 Markdown 高亮/折叠（懒加载）
+vim-instant-markdown         浏览器实时预览（需 instant-markdown-d，懒加载）
 
 ==============================================================================
 7. 界面与格式化                                                 *myvim-ui*

@@ -52,12 +52,12 @@ make install    # 或 sh init.sh（兼容入口）
 
 | 目标 | 作用 |
 |---|---|
-| `make install` | 一键全装（前置检测 → 可选依赖 → 子模块 → vimrc 软链 → 插件 → tern → help → verify） |
+| `make install` | 一键全装（前置检测 → 可选依赖 → 子模块 → vimrc 软链 → 插件 → help → verify） |
 | `make deps` | 自动安装可选依赖 fzf / ripgrep / instant-markdown-d（brew/apt-get，幂等） |
 | `make update` | 更新子模块与全部插件（更新后建议 `make verify` 复检） |
 | `make verify` | 分层验证：外部依赖 + 插件能力冒烟测试 |
 | `make ycm` | 编译 YouCompleteMe（需 vim +python3，幂等） |
-| `make plugins` / `tern` / `help` | 单独执行某一步 |
+| `make plugins` / `help` | 单独执行某一步 |
 
 ### 新增插件约定
 
@@ -73,7 +73,7 @@ make install    # 或 sh init.sh（兼容入口）
 YCM本身需要编译之后才能使用，所以每次更新之后都要重新编译
 
 ```
-cd ~/.vim/bundle/YouCompleteMe
+cd ~/.vim/plugged/YouCompleteMe
 ./install.py --clangd-completer
 ```
 
@@ -83,4 +83,9 @@ cd ~/.vim/bundle/YouCompleteMe
 
 需要安装instant-markdown-d：`npm -g install instant-markdown-d`
 
-插件由 Vundle 安装，自带的 ftplugin 会自动生效，无需额外拷贝文件。
+插件由 vim-plug 安装，自带的 ftplugin 会自动生效，无需额外拷贝文件。
+
+### 从 Vundle 迁移
+
+2026-08 起插件管理器由 Vundle 换为 vim-plug，插件目录从 `bundle/` 变为 `plugged/`。
+升级后旧目录可手动删除：`rm -rf ~/.vim/bundle`
