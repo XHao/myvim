@@ -177,7 +177,7 @@ git commit -m "Migrate plugin declarations to vim-plug; drop tern/javacomplete2;
 - Modify: `scripts/install.d/50-ycm.sh`
 - Modify: `scripts/verify.vim`
 
-- [ ] **Step 1: 30-plugins.sh 换 PlugInstall --sync**
+- [x] **Step 1: 30-plugins.sh 换 PlugInstall --sync**
 
 全文替换为：
 
@@ -194,7 +194,7 @@ vim -E -s -c 'source $HOME/.vimrc' -c "PlugInstall --sync" -c "qa" </dev/null
 ok "插件安装完成"
 ```
 
-- [ ] **Step 2: Makefile 删 tern、改 update**
+- [x] **Step 2: Makefile 删 tern、改 update**
 
 - `.PHONY` 删除 `tern`
 - 删除 `tern: plugins` 目标整段
@@ -207,17 +207,17 @@ update:
 	vim -E -s -c 'source $$HOME/.vimrc' -c "PlugUpdate --sync" -c "qa" </dev/null
 ```
 
-- [ ] **Step 3: 删除 40-tern.sh**
+- [x] **Step 3: 删除 40-tern.sh**
 
 Run: `git rm scripts/install.d/40-tern.sh`
 
-- [ ] **Step 4: 50-ycm.sh 路径改 plugged**
+- [x] **Step 4: 50-ycm.sh 路径改 plugged**
 
 ```bash
 YCM_DIR="$HOME/.vim/plugged/YouCompleteMe"
 ```
 
-- [ ] **Step 5: verify.vim 两处改动**
+- [x] **Step 5: verify.vim 两处改动**
 
 ycm_core 探测改 plugged 路径：
 ```vim
@@ -229,7 +229,7 @@ if empty(glob(expand('~/.vim/plugged/YouCompleteMe/third_party/ycmd/ycm_core*'))
 call s:check_cmd('PlugInstall')
 ```
 
-- [ ] **Step 6: 验证**
+- [x] **Step 6: 验证**
 
 Run:
 ```bash
@@ -239,7 +239,7 @@ grep -c 'tern' Makefile; echo "（应为 0）"
 ```
 Expected: syntax OK；update 干跑显示 PlugUpdate --sync；Makefile 无 tern
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add scripts/install.d/30-plugins.sh scripts/install.d/50-ycm.sh scripts/verify.vim Makefile
