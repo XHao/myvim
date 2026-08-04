@@ -21,19 +21,17 @@ else
   warn "clangd 未找到 → xcode-select --install"
 fi
 
-# LSP servers（每个幂等：已装则跳过）
+# LSP servers（每个幂等：已装则跳过；失败仅 WARN 不中断）
 install_pyright() {
   have pyright && { ok "pyright 已安装，跳过"; return 0; }
   info "装 pyright (Python LSP, 走 npm registry)..."
-  npm install -g pyright
-  ok "pyright 安装完成"
+  npm install -g pyright && ok "pyright 安装完成" || warn "pyright 安装失败 → npm install -g pyright"
 }
 
 install_gopls() {
   have gopls && { ok "gopls 已安装，跳过"; return 0; }
   info "装 gopls (Go LSP, 走 proxy.golang.org)..."
-  go install golang.org/x/tools/gopls@latest
-  ok "gopls 安装完成"
+  go install golang.org/x/tools/gopls@latest && ok "gopls 安装完成" || warn "gopls 安装失败 → 检查 proxy.golang.org 可达性或切 VPN"
 }
 
 install_jdtls() {
@@ -43,16 +41,14 @@ install_jdtls() {
     return 0
   fi
   info "装 jdtls (Java LSP, brew bottle / ghcr.io)..."
-  brew install jdtls
-  ok "jdtls 安装完成"
+  brew install jdtls && ok "jdtls 安装完成" || warn "jdtls 安装失败 → brew install jdtls"
 }
 
 # 格式化器
 install_clang_format() {
   have clang-format && { ok "clang-format 已安装，跳过"; return 0; }
   info "装 clang-format (C/C++/JS 格式化器)..."
-  brew install clang-format
-  ok "clang-format 安装完成"
+  brew install clang-format && ok "clang-format 安装完成" || warn "clang-format 安装失败 → brew install clang-format"
 }
 
 install_black() {
