@@ -20,77 +20,62 @@ set wildmenu
 
 
 set nocompatible              " be iMproved, required
-filetype off                  " required
 
-" set the runtime path to include Vundle and initialize
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
-" alternatively, pass a path where Vundle should install plugins
-"call vundle#begin('~/some/path/here')
-
-" let Vundle manage Vundle, required
-Plugin 'VundleVim/Vundle.vim'
+" vim-plug 插件管理（plug.vim 已 vendor 在 ~/.vim/autoload/）
+call plug#begin('~/.vim/plugged')
 
 " ycm + ultisnips（需 vim +python3，否则跳过声明，见 make verify 提示）
 if has('python3')
-  Plugin 'Valloric/YouCompleteMe'
-  Plugin 'rdnetto/YCM-Generator'
-  Plugin 'SirVer/ultisnips'
-  Plugin 'honza/vim-snippets'
+  Plug 'Valloric/YouCompleteMe'
+  Plug 'rdnetto/YCM-Generator'
+  Plug 'SirVer/ultisnips'
+  Plug 'honza/vim-snippets'
 endif
 
-Plugin 'vim-airline'
-Plugin 'node'
-Plugin 'scrooloose/nerdtree'
-Plugin 'Xuyuanp/nerdtree-git-plugin'
-Plugin 'godlygeek/tabular'
-Plugin 'plasticboy/vim-markdown'
-Plugin 'suan/vim-instant-markdown'
-Plugin 'majutsushi/tagbar'
-Plugin 'jelera/vim-javascript-syntax'
-Plugin 'ternjs/tern_for_vim', {'do': 'npm install'}
-
-" slow and take more cpu
-Plugin 'artur-shaik/vim-javacomplete2'
+Plug 'vim-airline/vim-airline'
+Plug 'moll/vim-node', { 'for': 'javascript' }
+Plug 'scrooloose/nerdtree'
+Plug 'Xuyuanp/nerdtree-git-plugin'
+Plug 'godlygeek/tabular', { 'for': 'markdown' }
+Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
+Plug 'suan/vim-instant-markdown', { 'for': 'markdown' }
+Plug 'majutsushi/tagbar'
+Plug 'pangloss/vim-javascript', { 'for': 'javascript' }
 " c++ syntax
-Plugin 'octol/vim-cpp-enhanced-highlight'
-Plugin 'nathanaelkane/vim-indent-guides'
-Plugin 'derekwyatt/vim-fswitch'
+Plug 'octol/vim-cpp-enhanced-highlight', { 'for': ['c', 'cpp'] }
+Plug 'nathanaelkane/vim-indent-guides'
+Plug 'derekwyatt/vim-fswitch', { 'for': ['c', 'cpp'] }
 " Add maktaba and codefmt to the runtimepath.
 " (The latter must be installed before it can be used.)
-Plugin 'google/vim-maktaba'
-Plugin 'google/vim-codefmt'
+Plug 'google/vim-maktaba'
+Plug 'google/vim-codefmt'
 " Also add Glaive, which is used to configure codefmt's maktaba flags. See
 " `:help :Glaive` for usage.
-Plugin 'google/vim-glaive'
+Plug 'google/vim-glaive'
 
 " fzf 模糊搜索（需 brew install fzf ripgrep）
-Plugin 'junegunn/fzf'
-Plugin 'junegunn/fzf.vim'
+Plug 'junegunn/fzf'
+Plug 'junegunn/fzf.vim'
 " git
-Plugin 'tpope/vim-fugitive'
+Plug 'tpope/vim-fugitive'
 " 括号自动配对
-Plugin 'jiangmiao/auto-pairs'
+Plug 'jiangmiao/auto-pairs'
 " 自动维护 ctags
-Plugin 'ludovicchabant/vim-gutentags'
+Plug 'ludovicchabant/vim-gutentags'
 
-Plugin 'scrooloose/nerdcommenter'
+Plug 'scrooloose/nerdcommenter'
 
-" All of your Plugins must be added before the following line
-call vundle#end()            " required
-filetype plugin indent on    " required
+call plug#end()            " required
+filetype plugin indent on  " required
 
 
 augroup autoformat_settings
   autocmd FileType c,cpp,proto,javascript AutoFormatBuffer clang-format
 augroup END
 
-filetype plugin indent on
-
 syntax enable
 syntax on
 
-au FileType javascript call JavaScriptFold()
 
 
 " airline config
@@ -116,9 +101,6 @@ let g:clang_compilation_database = './build'
 
 " nerd tree
 let NERDTreeShowHidden=1
-let tern_show_signature_in_pum = 1
-let tern_show_argument_hints = 'on_hold'
-autocmd FileType javascript nnoremap <leader>d :TernDef<CR>
 let g:NERDTreeDirArrowExpandable = '▸'
 let g:NERDTreeDirArrowCollapsible = '▾'
 autocmd StdinReadPre * let s:std_in=1
@@ -137,7 +119,7 @@ let g:NERDTreeGitStatusIndicatorMapCustom = {
             \ }
 
 "YCM
-let g:ycm_global_ycm_extra_conf = '~/.vim/bundle/YouCompleteMe/third_party/ycmd/.ycm_extra_conf.py' 
+let g:ycm_global_ycm_extra_conf = '~/.vim/plugged/YouCompleteMe/third_party/ycmd/.ycm_extra_conf.py'
 let g:ycm_goto_buffer_command = 'vertical-split'
 " 补全功能在注释中同样有效
 let g:ycm_complete_in_comments=1
