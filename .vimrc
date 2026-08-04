@@ -94,6 +94,10 @@ augroup lsp_setup
     \ allowlist: ['java']})
 augroup END
 
+" 启用 vim-lsp —— 必须在 augroup lsp_setup 后调用，会触发 User lsp_setup 事件
+" 让 autocmd 注册各 LSP server。缺此行则 servers 永远不注册。
+call lsp#enable()
+
 " vim-go 配置（与 vim-lsp 协作，gopls 作 LSP 来源）
 let g:go_def_mode = 'gopls'
 let g:go_gopls_enabled = 1
