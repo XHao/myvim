@@ -50,7 +50,7 @@ make ycm      ──>  删除（YCM 不再使用）
 
 **新增（在 plug#begin 块内）：**
 - `Plug 'prabirshrestha/vim-lsp'`
-- `Plug 'prabirshrestha/asynccomplete.vim'`（completion popup 集成 vim-lsp，必需）
+- `Plug 'prabirshrestha/asyncomplete.vim'`（completion popup 集成 vim-lsp，必需）
 - `Plug 'fatih/vim-go', { 'for': 'go' }`（懒加载）
 
 **新增（配置 + 键绑定，放在 `plug#end()` 后）：**
@@ -248,7 +248,7 @@ call s:check_cmd('GoTest',         'vim-go 未加载?')
 - 删除目标表中 `make ycm` 行
 - "已安装插件一览"表：
   - 补全/片段行：删 `YouCompleteMe *, YCM-Generator *`，保留 `ultisnips *, vim-snippets *`
-  - 新增行：`LSP/Go 开发 | vim-lsp, asynccomplete, vim-go ⚡`
+  - 新增行：`LSP/Go 开发 | vim-lsp, asyncomplete, vim-go`
 
 ### 6. doc/myvim.txt
 

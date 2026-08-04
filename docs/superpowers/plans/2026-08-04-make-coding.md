@@ -4,7 +4,7 @@
 
 **Goal:** 新增 `make coding` 目标安装 LSP servers + 格式化器，把 .vimrc 从 YCM 切换到 vim-lsp + vim-go 全 LSP 架构，删除 `make ycm` 流程。
 
-**Architecture:** 删 YCM/YCM-Generator 声明与配置；.vimrc 加 vim-lsp + asynccomplete + vim-go 声明及 LSP server 注册；Makefile 删 `ycm` target 加 `coding` target；新增 `scripts/install.d/60-coding.sh` 装系统二进制；verify 扩展检查 LSP 命令与二进制；README + myvim.txt 文档同步。
+**Architecture:** 删 YCM/YCM-Generator 声明与配置；.vimrc 加 vim-lsp + asyncomplete + vim-go 声明及 LSP server 注册；Makefile 删 `ycm` target 加 `coding` target；新增 `scripts/install.d/60-coding.sh` 装系统二进制；verify 扩展检查 LSP 命令与二进制；README + myvim.txt 文档同步。
 
 **Tech Stack:** bash、Makefile、vim-plug、vim-lsp、vim-go、clangd/pyright/gopls/jdtls、npm/brew/go install。
 
@@ -29,7 +29,7 @@
 - Consumes: 现有 .vimrc 第 27-33 行 YCM/UltiSnips 守卫块、第 122-139 行 YCM 配置、第 202-204 行 YCM 键绑定
 - Produces: .vimrc 含 vim-lsp/vim-go 声明、LSP server 注册、新键绑定；不含任何 YCM 引用
 
-- [ ] **Step 1: 删 YCM Plug 声明（保留 ultisnips/vim-snippets）**
+- [x] **Step 1: 删 YCM Plug 声明（保留 ultisnips/vim-snippets）**
 
 把 .vimrc 第 27-33 行的 YCM 守卫块：
 
@@ -52,24 +52,24 @@ if has('python3')
   Plug 'honza/vim-snippets'
 endif
 
-" vim-lsp + asynccomplete + vim-go（全 LSP 架构，替代 YCM）
+" vim-lsp + asyncomplete + vim-go（全 LSP 架构，替代 YCM）
 Plug 'prabirshrestha/vim-lsp'
-Plug 'prabirshrestha/asynccomplete.vim'
+Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'fatih/vim-go', { 'for': 'go' }
 ```
 
-- [ ] **Step 2: 删 YCM 配置块**
+- [x] **Step 2: 删 YCM 配置块**
 
 删 .vimrc 中（约第 121-139 行）从 `"YCM` 注释到 `let g:ycm_seed_identifiers_with_syntax=1` 的整段 YCM 配置。
 
-- [ ] **Step 3: 改 YCM extra_conf 路径行**
+- [x] **Step 3: 改 YCM extra_conf 路径行**
 
 删 .vimrc 中：
 ```vim
 let g:ycm_global_ycm_extra_conf = '~/.vim/plugged/YouCompleteMe/third_party/ycmd/.ycm_extra_conf.py'
 ```
 
-- [ ] **Step 4: 替换 YCM 键绑定为 LSP 键绑定**
+- [x] **Step 4: 替换 YCM 键绑定为 LSP 键绑定**
 
 把 .vimrc 中（约第 202-204 行）：
 
@@ -96,7 +96,7 @@ nnoremap <leader>dl  :LspDocumentSymbol<CR>
 nnoremap <leader>wl  :LspWorkspaceSymbol<CR>
 ```
 
-- [ ] **Step 5: 加 vim-lsp server 注册 + vim-go 配置**
+- [x] **Step 5: 加 vim-lsp server 注册 + vim-go 配置**
 
 在 `call plug#end()` 后、`filetype plugin indent on` 前，加入：
 
@@ -133,7 +133,7 @@ let g:go_gopls_enabled = 1
 let g:lsp_format_sync_timeout = 1000
 ```
 
-- [ ] **Step 6: 验证 .vimrc 无头加载无报错**
+- [x] **Step 6: 验证 .vimrc 无头加载无报错**
 
 Run:
 ```bash
@@ -141,7 +141,7 @@ PATH=/opt/homebrew/bin:$PATH vim -E -s -c 'source $HOME/.vimrc' -c 'verbose echo
 ```
 Expected: 输出 `2`（命令存在）；无 E 开头错误。注意：此时 vim-lsp 插件尚未 clone 到 plugged/，命令可能显示 `0`。先验证无 E 级报错。
 
-- [ ] **Step 7: 验证全文无 YCM 残留**
+- [x] **Step 7: 验证全文无 YCM 残留**
 
 Run:
 ```bash
@@ -149,7 +149,7 @@ grep -nE 'YCM|YouCompleteMe|ycm_' /Users/shako/.vim/.vimrc
 ```
 Expected: 无输出（除非 .vimrc 中有注释提及历史 YCM）
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git -C /Users/shako/.vim add .vimrc
@@ -167,7 +167,7 @@ git -C /Users/shako/.vim commit -m "Switch .vimrc from YCM to vim-lsp + vim-go"
 - Consumes: 现有 Makefile 的 `ycm` target 和 `.PHONY` 行
 - Produces: Makefile 含 `coding: plugins` target，无 `ycm` target
 
-- [ ] **Step 1: 改 .PHONY 行**
+- [x] **Step 1: 改 .PHONY 行**
 
 把 Makefile 第 1 行：
 ```makefile
@@ -178,7 +178,7 @@ git -C /Users/shako/.vim commit -m "Switch .vimrc from YCM to vim-lsp + vim-go"
 .PHONY: install submodules vimrc plugins help update verify preflight deps coding
 ```
 
-- [ ] **Step 2: 删 ycm target**
+- [x] **Step 2: 删 ycm target**
 
 删 Makefile 中：
 ```makefile
@@ -186,7 +186,7 @@ ycm:
 	bash $(INSTALL_DIR)/50-ycm.sh
 ```
 
-- [ ] **Step 3: 加 coding target**
+- [x] **Step 3: 加 coding target**
 
 在 `verify:` 块后追加：
 ```makefile
@@ -194,7 +194,7 @@ coding: plugins
 	bash $(INSTALL_DIR)/60-coding.sh
 ```
 
-- [ ] **Step 4: 验证 Makefile 语法**
+- [x] **Step 4: 验证 Makefile 语法**
 
 Run:
 ```bash
@@ -203,7 +203,7 @@ grep -c 'ycm' /Users/shako/.vim/Makefile; echo "（应为 0）"
 ```
 Expected: `-n coding` 显示 `bash scripts/install.d/60-coding.sh`；grep 计数为 0
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git -C /Users/shako/.vim add Makefile
@@ -222,14 +222,14 @@ git -C /Users/shako/.vim commit -m "Replace make ycm with make coding target"
 - Consumes: `scripts/common.sh` 的 `require_cmd` / `have` / `info` / `ok` / `warn` / `err` 函数
 - Produces: `60-coding.sh` 装齐 pyright/gopls/jdtls/clang-format/black/google-java-format/prettier（幂等）
 
-- [ ] **Step 1: 删 50-ycm.sh**
+- [x] **Step 1: 删 50-ycm.sh**
 
 Run:
 ```bash
 git -C /Users/shako/.vim rm scripts/install.d/50-ycm.sh
 ```
 
-- [ ] **Step 2: 创建 60-coding.sh**
+- [x] **Step 2: 创建 60-coding.sh**
 
 写入 `scripts/install.d/60-coding.sh`：
 
@@ -318,14 +318,14 @@ install_prettier
 ok "make coding 完成：LSP servers + 格式化器已就位"
 ```
 
-- [ ] **Step 3: 给 60-coding.sh 加 +x**
+- [x] **Step 3: 给 60-coding.sh 加 +x**
 
 Run:
 ```bash
 chmod +x /Users/shako/.vim/scripts/install.d/60-coding.sh
 ```
 
-- [ ] **Step 4: bash 语法检查**
+- [x] **Step 4: bash 语法检查**
 
 Run:
 ```bash
@@ -333,7 +333,7 @@ bash -n /Users/shako/.vim/scripts/install.d/60-coding.sh && echo "syntax OK"
 ```
 Expected: `syntax OK`
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git -C /Users/shako/.vim add scripts/install.d/50-ycm.sh scripts/install.d/60-coding.sh
@@ -352,7 +352,7 @@ git -C /Users/shako/.vim commit -m "Replace 50-ycm.sh with 60-coding.sh"
 - Consumes: Task 1 加的 LSP 键绑定命令名、Task 3 装的二进制名
 - Produces: `make verify` 报告 LSP 命令与二进制存在性
 
-- [ ] **Step 1: verify.sh 新增 LSP/格式化器二进制检查**
+- [x] **Step 1: verify.sh 新增 LSP/格式化器二进制检查**
 
 在 `scripts/verify.sh` 末尾的 `exit $FAILED` 前加入：
 
@@ -367,7 +367,7 @@ check_bin google-java-format "make coding"             WARN
 check_bin prettier           "make coding"             WARN
 ```
 
-- [ ] **Step 2: verify.vim 删 YCM 检查、加 LSP 检查**
+- [x] **Step 2: verify.vim 删 YCM 检查、加 LSP 检查**
 
 在 `scripts/verify.vim` 中找到 YCM 检查段（`ycm_core` glob 探测段）：
 
@@ -391,7 +391,7 @@ call s:check_cmd('GoBuild',        'vim-go 未加载?')
 call s:check_cmd('GoTest',         'vim-go 未加载?')
 ```
 
-- [ ] **Step 3: 验证 verify.sh 语法**
+- [x] **Step 3: 验证 verify.sh 语法**
 
 Run:
 ```bash
@@ -399,7 +399,7 @@ bash -n /Users/shako/.vim/scripts/verify.sh && echo "syntax OK"
 ```
 Expected: `syntax OK`
 
-- [ ] **Step 4: 跑 make verify（此时 vim-lsp/vim-go 还没 clone，预期 FAIL 但不应崩溃）**
+- [x] **Step 4: 跑 make verify（此时 vim-lsp/vim-go 还没 clone，预期 FAIL 但不应崩溃）**
 
 Run:
 ```bash
@@ -407,7 +407,7 @@ PATH=/opt/homebrew/bin:$PATH make -C /Users/shako/.vim verify 2>&1 | tail -25
 ```
 Expected: `:LspDefinition` / `:GoBuild` 等检查为 `[FAIL]`（vim-lsp/vim-go 未 clone）；二进制检查 `clangd` PASS（系统自带），其余 `[WARN] make coding`（未装）。退出码非 0 但流程跑完。
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git -C /Users/shako/.vim add scripts/verify.sh scripts/verify.vim
@@ -421,20 +421,20 @@ git -C /Users/shako/.vim commit -m "Extend verify to check LSP commands and bina
 **Files:** 无（仅触发 PlugInstall）
 
 **Interfaces:**
-- Consumes: Task 1 的 .vimrc 改动（新增 vim-lsp / asynccomplete / vim-go 声明）
+- Consumes: Task 1 的 .vimrc 改动（新增 vim-lsp / asyncomplete / vim-go 声明）
 - Produces: `~/.vim/plugged/{vim-lsp,async.vim,vim-go}/` 目录存在
 
-- [ ] **Step 1: 跑 PlugInstall --sync**
+- [x] **Step 1: 跑 PlugInstall --sync**
 
 Run:
 ```bash
 PATH=/opt/homebrew/bin:$PATH vim -E -s -c 'source $HOME/.vimrc' -c "PlugInstall --sync" -c "qa" </dev/null 2>&1 | tail -10
 ```
-Expected: 无错误输出；vim-lsp / asynccomplete / vim-go 克隆到 plugged/
+Expected: 无错误输出；vim-lsp / asyncomplete / vim-go 克隆到 plugged/
 
 注：本步需要 github.com 可达（vim-plug 走 github clone）。若用户当前网络不通，可推迟到切 VPN 后再跑。本计划文档保留此步作为后续验证。
 
-- [ ] **Step 2: 验证新插件目录存在**
+- [x] **Step 2: 验证新插件目录存在**
 
 Run:
 ```bash
@@ -442,7 +442,7 @@ ls /Users/shako/.vim/plugged/ | grep -E 'vim-lsp|async|vim-go'
 ```
 Expected: 输出 `async.vim`、`vim-go`、`vim-lsp` 三行
 
-- [ ] **Step 3: 跑 make verify，确认 LSP/Go 命令 PASS**
+- [x] **Step 3: 跑 make verify，确认 LSP/Go 命令 PASS**
 
 Run:
 ```bash
@@ -450,7 +450,7 @@ PATH=/opt/homebrew/bin:$PATH make -C /Users/shako/.vim verify 2>&1 | grep -E 'Ls
 ```
 Expected: 5 行 `[PASS]`
 
-- [ ] **Step 4: Commit（无需提交文件，仅记录状态）**
+- [x] **Step 4: Commit（无需提交文件，仅记录状态）**
 
 本步不产生代码变更，仅状态变化。无需 commit。若需记录可跳过。
 
@@ -466,7 +466,7 @@ Expected: 5 行 `[PASS]`
 - Consumes: Task 1-3 的最终状态（无 YCM，新增 vim-lsp/vim-go/make coding）
 - Produces: 文档与代码一致
 
-- [ ] **Step 1: README.md 删 YCM 段、加 LSP 段**
+- [x] **Step 1: README.md 删 YCM 段、加 LSP 段**
 
 把 `## plugins` 下的 `### [YouCompleteMe]` 整段（约 14 行）替换为：
 
@@ -496,7 +496,7 @@ make coding    # 装 pyright/gopls/jdtls LSP servers + clang-format/black/google
 
 注意：保留后面的 "### 从 Vundle 迁移" 段不变。
 
-- [ ] **Step 2: README.md 更新 make 目标表**
+- [x] **Step 2: README.md 更新 make 目标表**
 
 把目标表中：
 ```
@@ -507,7 +507,7 @@ make coding    # 装 pyright/gopls/jdtls LSP servers + clang-format/black/google
 | `make coding` | 安装 LSP servers + 格式化器（pyright/gopls/jdtls/clang-format/black/google-java-format/prettier；不进入 make install 主流程） |
 ```
 
-- [ ] **Step 3: README.md 更新插件一览表**
+- [x] **Step 3: README.md 更新插件一览表**
 
 把"已安装插件一览"小节中：
 
@@ -519,7 +519,7 @@ make coding    # 装 pyright/gopls/jdtls LSP servers + clang-format/black/google
 
 ```
 | 补全 / 片段 | ultisnips *, vim-snippets * |
-| LSP / Go 开发 | vim-lsp, asynccomplete.vim, vim-go ⚡ |
+| LSP / Go 开发 | vim-lsp, asyncomplete.vim, vim-go |
 ```
 
 并删除该表下方的"带 * 的需 vim +python3"说明中关于 YCM 的部分，改为：
@@ -528,7 +528,7 @@ make coding    # 装 pyright/gopls/jdtls LSP servers + clang-format/black/google
 带 * 的需 `vim +python3`（macOS 自带 vim 无，须 `brew install vim`）。`.vimrc` 中 `if has('python3')` 守卫会自动跳过未满足的声明，不影响其他插件。带 ⚡ 的按文件类型延迟加载。
 ```
 
-- [ ] **Step 4: doc/myvim.txt §2 删 YCM 节**
+- [x] **Step 4: doc/myvim.txt §2 删 YCM 节**
 
 把 §2 中：
 ```
@@ -543,7 +543,7 @@ YCM-Generator       生成 .ycm_extra_conf.py
 （YCM 已弃用，改用 vim-lsp，详见 §8）
 ```
 
-- [ ] **Step 5: doc/myvim.txt §3 键绑定改 LSP**
+- [x] **Step 5: doc/myvim.txt §3 键绑定改 LSP**
 
 把 §3 中（如有）：
 ```
@@ -561,7 +561,7 @@ YCM-Generator       生成 .ycm_extra_conf.py
   [d / ]d           上一/下一诊断
 ```
 
-- [ ] **Step 6: doc/myvim.txt §6 加 vim-go 节**
+- [x] **Step 6: doc/myvim.txt §6 加 vim-go 节**
 
 在 §6 语言支持末尾加：
 ```
@@ -574,7 +574,7 @@ vim-go               Go 开发集成（懒加载，编辑 .go 时加载）
   :GoDef             跳转定义（gopls）
 ```
 
-- [ ] **Step 7: doc/myvim.txt 新增 §8 LSP**
+- [x] **Step 7: doc/myvim.txt 新增 §8 LSP**
 
 在 §7 后追加：
 
@@ -604,7 +604,7 @@ vim-lsp            LSP 客户端（替代 YCM，无需编译）
 LSP servers 与格式化器由 `make coding` 安装，详见 README.md。
 ```
 
-- [ ] **Step 8: 验证文档无 YCM 残留（迁移说明段除外）**
+- [x] **Step 8: 验证文档无 YCM 残留（迁移说明段除外）**
 
 Run:
 ```bash
@@ -612,7 +612,7 @@ grep -in 'YCM\|YouCompleteMe\|make ycm' /Users/shako/.vim/README.md /Users/shako
 ```
 Expected: 无输出
 
-- [ ] **Step 9: 重新生成 doc/tags**
+- [x] **Step 9: 重新生成 doc/tags**
 
 Run:
 ```bash
@@ -621,7 +621,7 @@ ls -la /Users/shako/.vim/doc/tags
 ```
 Expected: doc/tags 比 myvim.txt 新
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git -C /Users/shako/.vim add README.md doc/myvim.txt
@@ -634,7 +634,7 @@ git -C /Users/shako/.vim commit -m "Update docs for vim-lsp migration"
 
 **Files:** 无（纯验证）
 
-- [ ] **Step 1: 重新跑 make install 确保幂等**
+- [x] **Step 1: 重新跑 make install 确保幂等**
 
 Run:
 ```bash
@@ -643,7 +643,7 @@ echo "exit=$?"
 ```
 Expected: 多个"跳过"；退出码 0
 
-- [ ] **Step 2: 跑 make verify 全套检查**
+- [x] **Step 2: 跑 make verify 全套检查**
 
 Run:
 ```bash
@@ -651,7 +651,7 @@ PATH=/opt/homebrew/bin:$PATH make -C /Users/shako/.vim verify 2>&1 | tail -30
 ```
 Expected: `:LspDefinition` / `:LspCodeAction` / `:LspHover` / `:GoBuild` / `:GoTest` 全 `[PASS]`；二进制检查中 `clangd` PASS，其余 `[WARN] make coding`（LSP servers 与格式化器未装，待用户切 VPN 后跑 `make coding`）
 
-- [ ] **Step 3: 启动 vim 无报错**
+- [x] **Step 3: 启动 vim 无报错**
 
 Run:
 ```bash
@@ -660,7 +660,7 @@ echo "exit=$?"
 ```
 Expected: 无错误输出；exit=0
 
-- [ ] **Step 4: help myvim 仍可用**
+- [x] **Step 4: help myvim 仍可用**
 
 Run:
 ```bash
@@ -670,7 +670,7 @@ rm -f /tmp/h.out
 ```
 Expected: 输出 `myvim.txt`
 
-- [ ] **Step 5: 更新本计划文档勾选状态，提交**
+- [x] **Step 5: 更新本计划文档勾选状态，提交**
 
 ```bash
 git -C /Users/shako/.vim add docs/superpowers/plans/2026-08-04-make-coding.md
