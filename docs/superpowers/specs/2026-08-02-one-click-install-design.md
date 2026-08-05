@@ -1,7 +1,7 @@
 # 一键安装与 vim 配置增强设计
 
 日期：2026-08-02
-状态：待评审
+状态：**已被取代** —— 后续插件管理器已由 Vundle 迁移至 vim-plug（见 `2026-08-04-vim-plug-migration-design.md`），并进一步切换到 vim-lsp 全 LSP 架构（见 `2026-08-04-make-coding-design.md`）。本文档仅作历史记录，描述的 Vundle/tern/javacomplete2 等已不再存在。
 
 ## 背景
 

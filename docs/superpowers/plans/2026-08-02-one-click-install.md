@@ -1,5 +1,7 @@
 # 一键安装与 vim 配置增强 Implementation Plan
 
+> **注：本计划已被取代** —— 后续 Vundle→vim-plug 迁移（`2026-08-04-vim-plug-migration.md`）和 vim-lsp 全 LSP 架构（`2026-08-04-make-coding.md`）已重构本文档描述的安装链路。本文档保留作历史记录，描述的 Vundle/tern/javacomplete2 等已不再存在。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 将 ~/.vim 配置仓库改造为 Makefile 驱动的模块化一键安装，并增强插件栈（fzf/fugitive/auto-pairs/gutentags）、提供分层验证（make verify）与内置帮助文档（:help myvim）。
