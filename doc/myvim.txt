@@ -26,7 +26,7 @@ vim-snippets        片段库
 
 NERDTree            文件树（<C-n> 开关），显示隐藏文件
 nerdtree-git-plugin 文件树中显示 git 状态图标
-Tagbar              符号大纲（<C-t> 开关）
+Tagbar              符号大纲（<F8> 开关）
 fzf + fzf.vim       模糊搜索（需 fzf、ripgrep 二进制）
   <C-p>             :Files 模糊找文件
   <leader>rg        :Rg 全文搜索
@@ -85,16 +85,16 @@ asyncomplete.vim    补全 popup 集成
   jdtls            Java LSP（make coding 装，brew bottle）
 
 通用键绑定：
-  <leader>jd       跳转定义 :LspDefinition
-  <leader>jc       跳转声明 :LspDeclaration
-  <leader>ji       跳转实现 :LspImplementation
-  <leader>jr       查找引用 :LspReferences
+  gd               跳转定义 :LspDefinition
+  gD               跳转声明 :LspDeclaration
+  gi               跳转实现 :LspImplementation
+  gr               查找引用 :LspReferences
   <leader>ca       code action :LspCodeAction
   <leader>rn       重命名 :LspRename
   K                悬停文档 :LspHover
   [d / ]d          上一/下一诊断
-  <leader>dl       文档符号 :LspDocumentSymbol
-  <leader>wl       工作区符号 :LspWorkspaceSymbol
+  <leader>ds       文档符号 :LspDocumentSymbol
+  <leader>ws       工作区符号 :LspWorkspaceSymbol
 
 LSP servers 与格式化器由 `make coding` 安装，详见 README.md。
 

@@ -218,21 +218,26 @@ let g:tagbar_type_cpp = {
 
 " common nmap
 nnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
-nmap <C-t> :TagbarToggle<CR>
+nmap <F8> :TagbarToggle<CR>
 nmap <C-n> :NERDTreeToggle<CR>
 
-" LSP 通用键绑定（vim-lsp，替代 YCM 的 YcmCompleter）
-nnoremap <leader>jd  :LspDefinition<CR>
-nnoremap <leader>jc  :LspDeclaration<CR>
-nnoremap <leader>ji  :LspImplementation<CR>
-nnoremap <leader>jr  :LspReferences<CR>
+" LSP 跳转键绑定(coc.nvim / vim-lsp 社区主流风格)
+" 注:gd/gD/gi/gr 是 vim 原生键,被 LSP 接管后:
+"   gd 原=local definition 查找(ctags 风格),现=LSP 跳定义
+"   gD 原=global definition,现=LSP 跳声明
+"   gi 原=回到上次 insert 位置,现=LSP 跳实现 ← 失去此功能
+"   gr 原=replace operator(vim9),现=LSP 查引用 ← 失去此功能
+nnoremap gd  :LspDefinition<CR>
+nnoremap gD  :LspDeclaration<CR>
+nnoremap gi  :LspImplementation<CR>
+nnoremap gr  :LspReferences<CR>
 nnoremap <leader>ca  :LspCodeAction<CR>
 nnoremap <leader>rn  :LspRename<CR>
 nnoremap K           :LspHover<CR>
 nnoremap [d          :LspPreviousDiagnostic<CR>
 nnoremap ]d          :LspNextDiagnostic<CR>
-nnoremap <leader>dl  :LspDocumentSymbol<CR>
-nnoremap <leader>wl  :LspWorkspaceSymbol<CR>
+nnoremap <leader>ds  :LspDocumentSymbol<CR>
+nnoremap <leader>ws  :LspWorkspaceSymbol<CR>
 
 " .cpp <-> .h, plugin vim-fswitch
 nmap <silent> <Leader>swi :FSHere<cr>
