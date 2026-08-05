@@ -165,7 +165,7 @@ let g:indent_guides_guide_size=1
 let g:UltiSnipsExpandTrigger="<leader><tab>"
 let g:UltiSnipsJumpForwardTrigger="<leader><tab>"
 let g:UltiSnipsJumpBackwardTrigger="<leader><s-tab>"
-let g:UltiSnipsSnippetDirectories=["mysnippets"]
+let g:UltiSnipsSnippetDirectories=["snippets"]
 
 
 " If you want :UltiSnipsEdit to split your window.
