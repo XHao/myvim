@@ -30,9 +30,10 @@ if has('python3')
   Plug 'honza/vim-snippets'
 endif
 
-" vim-lsp + asynccomplete + vim-go（全 LSP 架构，替代 YCM）
+" vim-lsp + asyncomplete + vim-go（全 LSP 架构，替代 YCM）
 Plug 'prabirshrestha/vim-lsp'
 Plug 'prabirshrestha/asyncomplete.vim'
+Plug 'prabirshrestha/asyncomplete-lsp.vim'
 Plug 'fatih/vim-go'
 
 Plug 'vim-airline/vim-airline'
@@ -103,6 +104,10 @@ let g:go_gopls_enabled = 1
 
 " 保存时格式化（vim-lsp sync format）
 let g:lsp_format_sync_timeout = 1000
+
+" asyncomplete 自动 popup（打字时弹 LSP 补全列表）
+" asyncomplete-lsp.vim 通过监听 User lsp_server_init 事件自动注册 source,无需手动写 autocmd
+let g:asyncomplete_auto_popup = 1
 
 filetype plugin indent on  " required
 
