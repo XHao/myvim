@@ -47,6 +47,7 @@ vim-fugitive        vim 内 Git
 auto-pairs          括号/引号自动配对（替代旧自研函数）
 nerdcommenter       注释开关（<leader>c<space> 切换注释）
 tabular             对齐（:Tab /字符）
+<space>             折叠开关（cursor 在闭合 fold 上 zo 展开，否则 zc 折叠）
 vim-surround 未装；自动配对由 auto-pairs 负责
 
 ==============================================================================
@@ -54,6 +55,7 @@ vim-surround 未装；自动配对由 auto-pairs 负责
 
 vim-cpp-enhanced-highlight   C++ 增强高亮
 pangloss/vim-javascript      JS 语法高亮/缩进（懒加载，编辑 .js 时才加载）
+moll/vim-node                Node.js 文件类型支持（懒加载，编辑 .js 时加载）
 vim-go                       Go 开发集成（编辑 .go 时加载 ftplugin）
   :GoBuild                   编译当前包
   :GoRun                     运行
@@ -70,14 +72,17 @@ vim-instant-markdown         浏览器实时预览（需 instant-markdown-d，�
 vim-airline         状态栏 + tabline
 vim-indent-guides   缩进参考线（启动即启用，从第 2 级开始）
 molokai             配色方案
-vim-codefmt         保存时自动格式化（c/cpp/proto/javascript，clang-format）
-vim-maktaba/glaive  codefmt 的依赖框架
+vim-codefmt         保存时自动格式化
+  :AutoFormatBuffer clang-format   手动触发格式化（c/cpp/proto/javascript）
+  augroup autoformat_settings      保存 .c/.cpp/.proto/.js 时自动跑 clang-format
+vim-maktaba + vim-glaive  codefmt 的依赖框架
 
 ==============================================================================
 8. LSP (vim-lsp)                                              *myvim-lsp*
 
 vim-lsp             LSP 客户端（替代 YCM，无需编译）
-asyncomplete.vim    补全 popup 集成
+asyncomplete.vim    补全 popup 框架
+asyncomplete-lsp.vim LSP↔asyncomplete 桥接（监听 User lsp_server_init 自动注册 source；打字时弹补全）
 
   clangd           C/C++ LSP（系统自带，无需 make coding）
   pyright          Python LSP（make coding 装，npm registry）
