@@ -273,26 +273,28 @@ endif
 " Claude Code 集成（AI coding agent，需 npm install -g @anthropic-ai/claude-code）
 " 用 <leader>a* 前缀避开 NERDCommenter 的 <leader>c* 命名空间
 "
-" g:claude_cmd  可自定义启动命令(默认 'mc --code')。改写示例:
-"               let g:claude_cmd = 'claude'                       " 直调 claude 二进制
-"               let g:claude_cmd = 'zsh -ic claude'              " 复用 zsh 函数(带 BUN_OPTIONS 等)
-"               let g:claude_cmd = 'BUN_OPTIONS="--preload=/x" claude'  " 直接传环境变量
-"               let g:claude_cmd = 'mc --code'                    " 用自定义 launcher
+" g:claude_cmd        交互式终端启动命令(默认 'mc --code',用于 <leader>ai)
+" g:claude_pipe_cmd   one-shot pipe 命令(默认 'mc --code',用于 <leader>ab/aq)
+"                       若你的 pipe 模式与交互模式命令不同,可分别设置
 "
-"   <leader>ai  normal 模式:底部 20 行 split 打开 Claude Code 终端(interactive,用 g:claude_cmd)
-"   <leader>ab  visual 选区:把选区 pipe 给 claude 改写(原地替换 buffer,失败可 u 撤销)
+" 改写示例(在 call plug#begin() 之前 set):
+"   let g:claude_cmd = 'claude'                    " 直调 claude 二进制
+"   let g:claude_cmd = 'zsh -ic claude'           " 复用 zsh 函数(加载 .zshrc)
+"   let g:claude_pipe_cmd = 'mc'                   " pipe 模式用裸 mc
+"
+"   <leader>ai  normal 模式:底部 20 行 split 打开 Claude Code 终端(用 g:claude_cmd)
+"   <leader>ab  visual 选区:选区 → Claude 改写(原地替换 buffer,失败可 u 撤销)
 "                例:选中代码 → <leader>ab → 输入 "convert to async/await" → Enter
-"   <leader>aq  visual 选区:把选区 pipe 给 claude 查询(输出到终端,不改 buffer)
+"   <leader>aq  visual 选区:选区 → Claude 查询(输出到终端,不改 buffer)
 "                例:选中代码 → <leader>aq → 输入 "explain this" → Enter
-"   注:<leader>ab/aq 用裸 'claude' 命令做 one-shot pipe;若你的 claude 是 zsh 函数,
-"       把这两行的 'claude' 改为 'zsh -ic claude' 或自定义命令。
 let g:claude_cmd = get(g:, 'claude_cmd', 'mc --code')
+let g:claude_pipe_cmd = get(g:, 'claude_pipe_cmd', 'mc --code')
 
 if executable('claude')
   " ++curwin: 让 :term 在当前窗口打开(替换 :split 创建的 buffer 副本),否则会有重复窗口
   execute 'nnoremap <leader>ai :botright 20split <bar> term ++curwin ' . g:claude_cmd . '<CR>'
-  xnoremap <leader>ab :'<,'>!claude
-  xnoremap <leader>aq :'<,'>w !claude
+  execute 'xnoremap <leader>ab :' . "'<,'>!" . g:claude_pipe_cmd
+  execute 'xnoremap <leader>aq :' . "'<,'>w !" . g:claude_pipe_cmd
 endif
 
 " gutentags（BSD ctags 不支持 --recurse，检测到不兼容则禁用）
