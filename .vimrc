@@ -270,6 +270,19 @@ if executable('rg')
   nnoremap <leader>rg :Rg<CR>
 endif
 
+" Claude Code 集成（AI coding agent，需 npm install -g @anthropic-ai/claude-code）
+" 用 <leader>a* 前缀避开 NERDCommenter 的 <leader>c* 命名空间
+"   <leader>ai  normal 模式:底部 20 行 split 打开 Claude Code 终端(interactive)
+"   <leader>ab  visual 选区:把选区 pipe 给 Claude 改写,输出原地替换(buffer)(失败可 u 撤销)
+"                例:选中代码 → <leader>ab → 输入 "convert to async/await" → Enter
+"   <leader>aq  visual 选区:把选区 pipe 给 Claude 查询(query),输出到终端,不改 buffer
+"                例:选中代码 → <leader>aq → 输入 "explain this" → Enter
+if executable('claude')
+  nnoremap <leader>ai :botright 20split <bar> term claude<CR>
+  xnoremap <leader>ab :'<,'>!claude
+  xnoremap <leader>aq :'<,'>w !claude
+endif
+
 " gutentags（BSD ctags 不支持 --recurse，检测到不兼容则禁用）
 let g:gutentags_cache_dir = expand('~/.cache/tags')
 let g:gutentags_project_root = ['.git']

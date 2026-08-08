@@ -104,4 +104,24 @@ asyncomplete-lsp.vim LSP↔asyncomplete 桥接（监听 User lsp_server_init 自
 LSP servers 与格式化器由 `make coding` 安装，详见 README.md。
 
 ==============================================================================
+9. AI Coding (Claude Code)                                       *myvim-ai*
+
+Claude Code CLI 集成（需 npm install -g @anthropic-ai/claude-code）
+用 <leader>a* 前缀避开 NERDCommenter 的 <leader>c* 命名空间。
+
+  <leader>ai       normal: 打开 Claude Code 终端（底部 20 行 split）
+                   交互式对话,Claude 可读写项目文件、跑命令、改代码
+  <leader>ab       visual: 选区 → Claude 改写（输出原地替换 buffer）
+                   例:选中代码 → <leader>ab → 输入 prompt → Enter
+                   失败可 u 撤销。适合"把这段改成 async/await"等
+  <leader>aq       visual: 选区 → Claude 查询（输出到终端,不改 buffer）
+                   适合"解释这段代码"等不需要改 buffer 的场景
+
+任务分工建议：
+  - 跳转/重命名/code action/单行小改 → 用 LSP（vim 内,即时）
+  - 跨文件重构/写测试/读陌生代码/起草函数 → 用 Claude Code（<leader>ai）
+  - 选区就地改写 → <leader>ab（带 prompt）
+  - 选区查询解释 → <leader>aq
+
+==============================================================================
  vim:tw=78:ts=8:ft=help:norl:
