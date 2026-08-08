@@ -6,12 +6,10 @@ this is the vim configuration
 
 通常只需按下方「前置依赖」用包管理器安装 vim 即可；本节仅在需要自行编译 vim 时参考。
 
-### install git
-
 ### install vim（从源码编译，可选）
 
 * git clone https://github.com/vim/vim.git
-* 安装python3-dev：sudo apt-get install -y python3-dev
+* 安装 python3-dev：sudo apt-get install -y python3-dev
 * cd vim
 * ./configure --with-features=huge --enable-multibyte --enable-rubyinterp=yes --enable-python3interp=yes --enable-perlinterp=yes --enable-luainterp=yes
 * sudo make install
@@ -66,19 +64,41 @@ make install    # 或 sh init.sh（兼容入口）
 1. `scripts/verify.vim` 加一行能力检查
 2. `doc/myvim.txt` 加一节说明（`:help myvim`）
 
-### 已安装插件一览
+## Quick Start（常用快捷键）
 
-`make install` 后，以下插件克隆到 `~/.vim/plugged/`。带 ⚡ 的按文件类型延迟加载（打开对应文件才加载，加快启动）。各插件的命令与快捷键详见 `:help myvim`。
+打开任意源文件后，最常用的操作：
+
+| 键 | 作用 |
+|---|---|
+| `gd` | 跳转定义（LSP） |
+| `gr` | 查找引用（LSP） |
+| `K` | 悬停文档（LSP） |
+| `<leader>ca` | code action（quickfix / refactor） |
+| `<leader>rn` | 重命名符号 |
+| `[d` / `]d` | 上一 / 下一诊断 |
+| `<C-n>` | 切换 NERDTree 文件树 |
+| `<F8>` | 切换 Tagbar 符号大纲 |
+| `<C-p>` | fzf 模糊找文件 |
+| `<leader>rg` | fzf ripgrep 全文搜索 |
+| `<leader><tab>` | UltiSnips 展开片段 / 跳到下一占位符 |
+| `<leader>ai` | 打开 Claude Code 终端（AI coding agent） |
+| `<C-o>` | 跳回上一个位置（jumplist back） |
+
+完整清单见 `:help myvim`。
+
+## 已安装插件一览
+
+`make install` 后，以下插件克隆到 `~/.vim/plugged/`。带 ⚡ 的按文件类型延迟加载。各插件的命令与快捷键详见 `:help myvim`。
 
 | 类别 | 插件 |
 |---|---|
 | 补全 / 片段 | ultisnips *, vim-snippets * |
-| LSP / Go 开发 | vim-lsp, asyncomplete.vim, vim-go |
+| LSP / Go 开发 | vim-lsp, asyncomplete.vim, asyncomplete-lsp.vim, vim-go |
 | 文件 / 跳转 | nerdtree, nerdtree-git-plugin, tagbar, fzf, fzf.vim, vim-fswitch ⚡, vim-gutentags |
 | Git | vim-fugitive |
 | 编辑增强 | auto-pairs, nerdcommenter, tabular ⚡ |
 | 语言支持 | vim-cpp-enhanced-highlight ⚡, pangloss/vim-javascript ⚡, moll/vim-node ⚡, vim-markdown ⚡, vim-instant-markdown ⚡ |
-| 界面 / 格式化 | vim-airline, vim-indent-guides, vim-codefmt, vim-maktaba, vim-glaive, molokai（配色，独立文件 + submodule） |
+| 界面 / 格式化 | vim-airline, vim-indent-guides, vim-codefmt, vim-maktaba, vim-glaive, molokai（配色） |
 
 带 * 的需 `vim +python3`（macOS 自带 vim 无，须 `brew install vim`）。`.vimrc` 中 `if has('python3')` 守卫会自动跳过未满足的声明，不影响其他插件。带 ⚡ 的按文件类型延迟加载。
 
@@ -100,13 +120,42 @@ make coding    # 装 pyright/gopls/jdtls LSP servers + clang-format/black/google
 
 `make coding` 幂等，已装的组件会跳过。完成后 `make verify` 中相关 `[WARN]` 全部转为 `[PASS]`。
 
+LSP 启用后，**打字时自动弹补全 popup**（asyncomplete-lsp 监听 LSP server 初始化事件自动注册 source）。
+
 ### [vim-instant-markdown](https://github.com/suan/vim-instant-markdown)
 
-需要安装instant-markdown-d：`npm -g install instant-markdown-d`
+需要安装 instant-markdown-d：`npm -g install instant-markdown-d`
 
 插件由 vim-plug 安装，自带的 ftplugin 会自动生效，无需额外拷贝文件。
+
+### Claude Code (AI coding agent)
+
+`<leader>ai` / `<leader>ab` / `<leader>aq` 集成 Claude Code CLI（需 `npm install -g @anthropic-ai/claude-code` 或自定义启动器）。
+
+默认启动命令 `mc --code`，可通过 `g:claude_cmd` / `g:claude_pipe_cmd` 变量在 `call plug#begin()` 之前改写：
+
+```vim
+let g:claude_cmd = 'claude'                    " 直调 claude 二进制
+let g:claude_cmd = 'zsh -ic claude'            " 复用 zsh 函数（加载 .zshrc）
+let g:claude_pipe_cmd = 'mc'                   " pipe 模式用裸 mc
+```
+
+| 键 | 模式 | 作用 |
+|---|---|---|
+| `<leader>ai` | normal | 底部 20 行 split 打开 Claude Code 终端（交互式） |
+| `<leader>ab` | visual | 选区 → Claude 改写（输出原地替换 buffer，失败可 `u` 撤销） |
+| `<leader>aq` | visual | 选区 → Claude 查询（输出到终端，不改 buffer） |
+
+任务分工建议：
+- **LSP（即时）**：跳转/重命名/code action/单行小改
+- **Claude Code（agentic）**：跨文件重构 / 写测试 / 读陌生代码 / 起草函数
+- **`<leader>ab`**：选区就地 AI 改写
+- **`<leader>aq`**：选区就地 AI 查询
+
+详见 `:help myvim-ai`。
 
 ### 从 Vundle 迁移
 
 2026-08 起插件管理器由 Vundle 换为 vim-plug，插件目录从 `bundle/` 变为 `plugged/`。
+2026-08 起进一步从 YCM 切换到 vim-lsp 全 LSP 架构（无需编译，C++/Python/Go/Java 全覆盖）。
 升级后旧目录可手动删除：`rm -rf ~/.vim/bundle`
