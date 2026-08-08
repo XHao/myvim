@@ -278,7 +278,8 @@ endif
 "   <leader>aq  visual 选区:把选区 pipe 给 Claude 查询(query),输出到终端,不改 buffer
 "                例:选中代码 → <leader>aq → 输入 "explain this" → Enter
 if executable('claude')
-  nnoremap <leader>ai :botright 20split <bar> term claude<CR>
+  " ++curwin: 让 :term 在当前窗口打开(替换 :split 创建的 buffer 副本),否则会有重复窗口
+  nnoremap <leader>ai :botright 20split <bar> term ++curwin claude<CR>
   xnoremap <leader>ab :'<,'>!claude
   xnoremap <leader>aq :'<,'>w !claude
 endif
