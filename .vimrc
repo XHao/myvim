@@ -167,10 +167,13 @@ let g:indent_guides_start_level=2
 let g:indent_guides_guide_size=1
 
 " Trigger configuration（<leader><tab> 展开/跳片段）
+" UltiSnipsSnippetDirectories 不显式设置 —— 用 UltiSnips 默认 ["UltiSnips"]
+" vim-snippets 同时提供 snippets/ (snipMate) 和 UltiSnips/ (原生) 两套,
+" UltiSnips 默认目录会找到 plugged/vim-snippets/UltiSnips/*.snippets
+" 不要设为 ["snippets"] —— 这是 snipMate 保留名,会触发 UltiSnips 报错
 let g:UltiSnipsExpandTrigger="<leader><tab>"
 let g:UltiSnipsJumpForwardTrigger="<leader><tab>"
 let g:UltiSnipsJumpBackwardTrigger="<leader><s-tab>"
-let g:UltiSnipsSnippetDirectories=["snippets"]
 
 
 " If you want :UltiSnipsEdit to split your window.
