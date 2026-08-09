@@ -279,22 +279,22 @@ nmap <silent> <Leader>swi :FSHere<CR>
 " 需 npm install -g @anthropic-ai/claude-code 或自定义启动器
 " 用 <leader>a* 前缀避开 NERDCommenter 的 <leader>c* 命名空间
 "
-" g:claude_cmd        交互式终端启动命令 (默认 'mc --code', 用于 <leader>ai)
-" g:claude_pipe_cmd   one-shot pipe 命令 (默认 'mc --code', 用于 <leader>ab/aq)
+" g:claude_cmd        交互式终端启动命令 (默认 'claude', 用于 <leader>ai)
+" g:claude_pipe_cmd   one-shot pipe 命令 (默认 'claude', 用于 <leader>ab/aq)
 "                       若 pipe 与交互命令不同, 可分别设置
 "
 " 改写示例 (在 call plug#begin() 之前 set):
 "   let g:claude_cmd = 'claude'                    " 直调 claude 二进制
 "   let g:claude_cmd = 'zsh -ic claude'            " 复用 zsh 函数 (加载 .zshrc)
-"   let g:claude_pipe_cmd = 'mc'                    " pipe 模式用裸 mc
+"   let g:claude_pipe_cmd = 'claude'               " pipe 模式用裸 claude
 "
 "   <leader>ai  normal: 底部 20 行 split 打开 Claude Code 终端 (用 g:claude_cmd)
 "   <leader>ab  visual: 选区 → Claude 改写 (原地替换 buffer, 失败可 u 撤销)
 "                例: 选中代码 → <leader>ab → 输入 "convert to async/await" → Enter
 "   <leader>aq  visual: 选区 → Claude 查询 (输出到终端, 不改 buffer)
 "                例: 选中代码 → <leader>aq → 输入 "explain this" → Enter
-let g:claude_cmd = get(g:, 'claude_cmd', 'mc --code')
-let g:claude_pipe_cmd = get(g:, 'claude_pipe_cmd', 'mc --code')
+let g:claude_cmd = get(g:, 'claude_cmd', 'zsh -ic claude')
+let g:claude_pipe_cmd = get(g:, 'claude_pipe_cmd', 'claude')
 
 if executable('claude')
   " ++curwin: 让 :term 在当前窗口打开 (替换 :split 创建的 buffer 副本), 否则会有重复窗口
