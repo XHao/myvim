@@ -69,12 +69,22 @@ Plug 'nathanaelkane/vim-indent-guides'
 Plug 'google/vim-maktaba'
 Plug 'google/vim-codefmt'
 Plug 'google/vim-glaive'
-Plug 'tomasr/molokai'              " 配色方案(vim-plug 管理, :PlugUpdate 自动更新)
+Plug 'sainnhe/everforest'          " 首选配色
+Plug 'joshdick/onedark.vim'       " 备用: :colorscheme onedark
+Plug 'tomasr/molokai'              " 备用: :colorscheme molokai
 
 call plug#end()
 filetype plugin indent on
 syntax enable
-colorscheme molokai                  " 必须在 plug#end() 后,molokai 才在 rtp 中
+" everforest 背景三档: hard #272e33 最深 / medium 默认 / soft #333c43 最浅(亮)
+set background=dark                  " 显式声明, 避免终端探测成 light 导致主题变浅色盘
+" 真彩色: Apple Terminal 已实测支持 24 位色; t_8f/t_8b 显式指定转义序列, 不依赖 terminfo
+set termguicolors
+let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+let g:everforest_background = 'soft'
+colorscheme everforest               " 必须在 plug#end() 后,主题才在 rtp 中
+let g:airline_theme='everforest'    " 状态栏与主题配套
 
 " ============================================================================
 " LSP (vim-lsp + asyncomplete + pyright/gopls/jdtls/clangd)
