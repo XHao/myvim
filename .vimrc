@@ -261,6 +261,14 @@ let g:vim_markdown_new_list_item_indent = 2
 let g:instant_markdown_slow = 1
 
 " ============================================================================
+" Java 语法
+" ============================================================================
+" Vim 9.2 自带 syntax/java.vim 的 Javadoc 内嵌 markdown 高亮会按 rtp 顺序
+" include 到上面的 plasticboy/vim-markdown (其组名体系是 mkd*/html*, 不含
+" markdownH1 等), 导致打开 java 文件报 E28. 关闭内嵌特性消音 (java 高亮不受影响).
+let g:java_ignore_markdown = 1
+
+" ============================================================================
 " vim-indent-guides (缩进参考线)
 " ============================================================================
 let g:indent_guides_enable_on_vim_startup = 1
