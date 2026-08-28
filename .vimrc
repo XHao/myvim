@@ -14,7 +14,7 @@ set cindent                          " C 风格缩进
 set foldenable
 set foldmethod=syntax
 set foldcolumn=0
-set foldlevel=1
+set foldlevelstart=99               " 打开文件时折叠全展开 (99), 不主动折叠
 set backspace=indent,eol,start       " backspace 可删行首/缩进
 set mouse=a
 set wildmenu                         " 命令行补全菜单
@@ -259,6 +259,9 @@ let g:vim_markdown_toc_autofit = 1
 let g:vim_markdown_fenced_languages = ['java=java', 'c++=cpp', 'viml=vim', 'bash=sh', 'ini=dosini']
 let g:vim_markdown_new_list_item_indent = 2
 let g:instant_markdown_slow = 1
+let g:instant_markdown_autostart = 0   " 打开 md 不自动开 preview, 手动: <leader>mp 开 / <leader>ms 关
+nnoremap <leader>mp :InstantMarkdownPreview<CR>
+nnoremap <leader>ms :InstantMarkdownStop<CR>
 
 " ============================================================================
 " Java 语法
