@@ -300,23 +300,38 @@ nmap <silent> <Leader>swi :FSHere<CR>
 " g:claude_cmd        交互式终端启动命令 (默认 'claude', 用于 <leader>ai)
 " g:claude_pipe_cmd   one-shot pipe 命令 (默认 'claude', 用于 <leader>ab/aq)
 "                       若 pipe 与交互命令不同, 可分别设置
+" g:claude_vsplit_min <leader>ai 竖开阈值: &columns >= 此值时右侧 vsplit, 否则底部 20 行
+"                       (默认 160; 竖开宽度 = min(90, &columns/2))
 "
 " 改写示例 (在 call plug#begin() 之前 set):
 "   let g:claude_cmd = 'claude'                    " 直调 claude 二进制
 "   let g:claude_cmd = 'zsh -ic claude'            " 复用 zsh 函数 (加载 .zshrc)
 "   let g:claude_pipe_cmd = 'claude'               " pipe 模式用裸 claude
 "
-"   <leader>ai  normal: 底部 20 行 split 打开 Claude Code 终端 (用 g:claude_cmd)
+"   <leader>ai  normal: 打开 Claude Code 终端 (用 g:claude_cmd), 宽屏右侧竖开/窄屏底部横开
 "   <leader>ab  visual: 选区 → Claude 改写 (原地替换 buffer, 失败可 u 撤销)
 "                例: 选中代码 → <leader>ab → 输入 "convert to async/await" → Enter
 "   <leader>aq  visual: 选区 → Claude 查询 (输出到终端, 不改 buffer)
 "                例: 选中代码 → <leader>aq → 输入 "explain this" → Enter
 let g:claude_cmd = get(g:, 'claude_cmd', 'zsh -ic claude')
 let g:claude_pipe_cmd = get(g:, 'claude_pipe_cmd', 'claude')
+let g:claude_vsplit_min = get(g:, 'claude_vsplit_min', 160)
+
+" 按传入总列数返回 split 命令: 宽屏 (>= g:claude_vsplit_min) 右侧竖开, 窄屏底部横开
+function! s:ClaudeSplitCmd(cols) abort
+  if a:cols >= g:claude_vsplit_min
+    return 'botright vertical ' . min([90, a:cols / 2]) . 'vsplit'
+  endif
+  return 'botright 20split'
+endfunction
+
+function! s:ClaudeAI() abort
+  " ++curwin: 让 :term 在当前窗口打开 (替换 :split 创建的 buffer 副本), 否则会有重复窗口
+  execute s:ClaudeSplitCmd(&columns) . ' | term ++curwin ' . g:claude_cmd
+endfunction
 
 if executable('claude')
-  " ++curwin: 让 :term 在当前窗口打开 (替换 :split 创建的 buffer 副本), 否则会有重复窗口
-  execute 'nnoremap <leader>ai :botright 20split <bar> term ++curwin ' . g:claude_cmd . '<CR>'
+  nnoremap <leader>ai :call <SID>ClaudeAI()<CR>
   execute 'xnoremap <leader>ab :' . "'<,'>!" . g:claude_pipe_cmd
   execute 'xnoremap <leader>aq :' . "'<,'>w !" . g:claude_pipe_cmd
 endif
