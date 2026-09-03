@@ -168,6 +168,12 @@ vim-go                       Go 开发集成（编辑 .go 时加载 ftplugin）
   :GoDef                      跳转定义（gopls）
 vim-markdown                 Markdown 高亮/折叠（懒加载）
 vim-instant-markdown         浏览器实时预览（需 instant-markdown-d，懒加载）
+Java (内置 syntax + vim-lsp/jdtls, 见 §9)
+  <leader>jc       :MavenClasses fzf 检索 ~/.m2 全部依赖 jar 里的类
+                   打开链: 缓存(~/.cache/decomp) → 本地 sources.jar
+                   → mvn dependency:get 在线拉取(走 settings.xml 镜像)
+                   → vineflower 反编译兜底; :MavenClasses! 重建索引(~5s)
+                   需 brew install fzf vineflower maven (unzip 系统自带)
 
 ==============================================================================
 8. 界面与格式化                                                 *myvim-ui*

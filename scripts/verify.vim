@@ -39,6 +39,12 @@ call s:check_cmd('NERDTreeToggle', '运行 make plugins')
 call s:check_cmd('TagbarToggle', '运行 make plugins')
 call s:check_cmd('Files', 'junegunn/fzf 未装上？运行 make plugins')
 call s:check_cmd('Rg', 'fzf.vim 未装上？运行 make plugins')
+" MavenClasses 需 fzf+vineflower (brew), 缺任一则按设计不注册命令, 降级为 WARN
+if executable('vineflower')
+  call s:check_cmd('MavenClasses', 'brew install vineflower 后重启 vim')
+else
+  call s:report('WARN', ':MavenClasses', 'brew install vineflower (依赖类检索)')
+endif
 call s:check_cmd('Git', 'vim-fugitive 未装上？运行 make plugins')
 call s:check_cmd('AutoFormatBuffer', 'vim-codefmt 未装上？运行 make plugins')
 call s:check_cmd('LspDefinition',  'vim-lsp 未加载？运行 make plugins')

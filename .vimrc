@@ -290,6 +290,220 @@ if executable('rg')
 endif
 
 " ============================================================================
+" Java 依赖类检索 (fzf + vineflower)
+" ============================================================================
+" <leader>jc  fzf 模糊检索 ~/.m2 全部依赖 jar 里的类, 选中后按三层链打开:
+"   层0 缓存命中   ~/.cache/decomp/ 下已有该类 → 直接打开 (零等待)
+"   层1 sources包  jar 同目录有 -sources.jar → 解出真源码
+"   层2 mvn拉取    mvn dependency:get 按坐标下载 sources.jar (走 settings.xml
+"                  镜像, 公司 nexus 也能拉; 20s 超时自动放弃)
+"   层3 vineflower 无源码可用 → 反编译 (0.4s, 输出也进缓存)
+" 所有层的产物都落在 ~/.cache/decomp/<jar路径sha16>/<包路径>/类名.java
+" 依赖: brew install fzf vineflower maven (unzip 系统自带)
+" 配置覆盖: g:mavenclasses_index(索引路径) / g:mavenclasses_cache_root(缓存根)
+"          g:mavenclasses_sources_download(默认1, 置0 禁止联网只走本地+反编译)
+" 重建索引: :MavenClasses! (~5s, 新装依赖后执行)
+
+" jar 路径 → [groupId, artifactId, version, classifier]; 非 ~/.m2 路径返回 []
+function! s:MavenCoords(jar) abort
+  let l:repo = expand('~/.m2/repository')
+  if stridx(a:jar, l:repo . '/') != 0 | return [] | endif
+  let l:parts = split(strpart(a:jar, len(l:repo) + 1), '/')
+  if len(l:parts) < 4 | return [] | endif
+  let l:ver = l:parts[-2]
+  let l:art = l:parts[-3]
+  let l:group = join(l:parts[0 : -4], '.')
+  let l:base = l:art . '-' . l:ver
+  let l:fname = l:parts[-1]
+  let l:cls = ''
+  if l:fname !=# l:base . '.jar' && strpart(l:fname, 0, len(l:base) + 1) ==# l:base . '-'
+    let l:cls = strpart(l:fname, len(l:base) + 1, len(l:fname) - len(l:base) - 5)
+  endif
+  return [l:group, l:art, l:ver, l:cls]
+endfunction
+
+" jar 路径 → dependency:get 的 -Dartifact 坐标 (classifier jar 拉 c-sources)
+function! s:MavenSourcesArtifact(jar) abort
+  let l:c = s:MavenCoords(a:jar)
+  if empty(l:c) | return '' | endif
+  return join(l:c[0 : 2], ':') . ':jar:' . (empty(l:c[3]) ? 'sources' : l:c[3] . '-sources')
+endfunction
+
+" jar 路径 → 同目录 sources jar 路径 (带 classifier 的 jar 也正确推导)
+function! s:SourcesJarPath(jar) abort
+  return substitute(a:jar, '\.jar$', '-sources.jar', '')
+endfunction
+
+" class entry → sources jar 里的 .java entry (内部类归并到外部类)
+function! s:SourcesEntry(entry) abort
+  return substitute(substitute(a:entry, '\$[^/]*\.class$', '.class', ''),
+        \ '\.class$', '.java', '')
+endfunction
+
+" (jar, class entry) → 反编译/源码缓存文件路径; 同类多版本 jar 天然隔离
+function! s:ClassCachePath(jar, entry) abort
+  let l:root = expand(get(g:, 'mavenclasses_cache_root', '~/.cache/decomp'))
+  return l:root . '/' . strpart(sha256(a:jar), 0, 16) . '/' . s:SourcesEntry(a:entry)
+endfunction
+
+" 生成 ~/.cache/m2classes.txt 索引, 行格式: <class entry><TAB><jar 路径>
+function! s:MavenIndexBuild() abort
+  let l:idx = expand(get(g:, 'mavenclasses_index', '~/.cache/m2classes.txt'))
+  let l:dir = fnamemodify(l:idx, ':h')
+  if !isdirectory(l:dir) | call mkdir(l:dir, 'p') | endif
+  " 单 jar 列表脚本: 只留 .class 条目, 行尾附加 jar 路径 (fzf --nth=1 只匹配类名)
+  let l:helper = l:dir . '/m2classes_listjar.sh'
+  call writefile([
+        \ '#!/bin/sh',
+        \ 'j="$1"',
+        \ 'unzip -Z1 "$j" 2>/dev/null | grep ''\.class$'' | awk -v j="$j" ''{print $0 "\t" j}''',
+        \ ], l:helper)
+  call system('chmod +x ' . shellescape(l:helper))
+  redraw | echo '构建 ~/.m2 类索引 (~5s, 仅首次)...'
+  call system('find ' . shellescape(expand('~/.m2/repository'))
+        \ . ' -name ''*.jar'' ! -name ''*sources*'' ! -name ''*javadoc*'' -print0'
+        \ . ' | xargs -0 -P 8 -n 1 ' . shellescape(l:helper)
+        \ . ' > ' . shellescape(l:idx) . ' 2>/dev/null')
+  redraw | echo ''
+  return v:shell_error == 0
+endfunction
+
+" mvn 拉取 sources.jar (job_wait 20s 防网络悬挂), 成功与否以文件落地为准
+function! s:MvnFetchSources(jar) abort
+  if !get(g:, 'mavenclasses_sources_download', 1) || !executable('mvn')
+    return 0
+  endif
+  let l:artifact = s:MavenSourcesArtifact(a:jar)
+  if empty(l:artifact) | return 0 | endif
+  let l:cwd = tempname()
+  call mkdir(l:cwd, 'p')  " 空目录, 避免误读当前工程的 pom.xml
+  redraw | echo 'mvn 拉取 ' . l:artifact . ' (最长 20s)...'
+  let l:job = job_start(['mvn', '-q', 'dependency:get',
+        \ '-Dartifact=' . l:artifact, '-Dtransitive=false'],
+        \ {'cwd': l:cwd, 'out_io': 'null', 'err_io': 'null'})
+  " Vim 无 job_wait (Neovim 的 jobwait), 轮询 job_status, 20s 上限防网络悬挂
+  let l:t0 = reltime()
+  while job_status(l:job) ==# 'run' && reltimefloat(reltime(l:t0)) < 20.0
+    sleep 50m
+  endwhile
+  if job_status(l:job) ==# 'run'
+    call job_stop(l:job)
+  endif
+  return filereadable(s:SourcesJarPath(a:jar))
+endfunction
+
+function! s:ExtractFromJar(jar, jentry) abort
+  let l:out = system('unzip -p ' . shellescape(a:jar) . ' ' . shellescape(a:jentry))
+  return (v:shell_error || empty(l:out)) ? '' : l:out
+endfunction
+
+function! s:WriteCache(path, content) abort
+  let l:dir = fnamemodify(a:path, ':h')
+  if !isdirectory(l:dir) | call mkdir(l:dir, 'p') | endif
+  call writefile(split(a:content, "\n", 1), a:path)
+endfunction
+
+" vineflower 反编译单个类 (内部类归并外部类一起输出), 产物写入缓存路径
+function! s:VineflowerDecompile(jar, entry, cachepath) abort
+  if !executable('vineflower') | return 0 | endif
+  let l:outer = substitute(s:SourcesEntry(a:entry), '\.java$', '.class', '')
+  let l:tmp = tempname()
+  let l:classfile = l:tmp . '/' . l:outer
+  call mkdir(fnamemodify(l:classfile, ':h'), 'p')
+  call system('unzip -p ' . shellescape(a:jar) . ' ' . shellescape(l:outer)
+        \ . ' > ' . shellescape(l:classfile))
+  if v:shell_error | return 0 | endif
+  let l:outdir = l:tmp . '/out'
+  call mkdir(l:outdir, 'p')
+  call system('vineflower --silent ' . shellescape(l:classfile) . ' ' . shellescape(l:outdir))
+  if v:shell_error | return 0 | endif
+  let l:java = get(glob(l:outdir . '/*.java', 0, 1) + glob(l:outdir . '/**/*.java', 0, 1), 0, '')
+  if empty(l:java) | return 0 | endif
+  call s:WriteCache(a:cachepath, join(readfile(l:java, 'b'), "\n"))
+  return 1
+endfunction
+
+" fzf sink: 行格式 <entry><TAB><jar>; 返回 'cache'/'sources'/'mvn'/'vineflower'/''
+" 各慢速阶段有 cmdline 进度提示, 打开后回执标明由哪层解析
+function! s:MavenClassOpen(line) abort
+  let l:parts = split(a:line, "\t")
+  if len(l:parts) != 2 || !filereadable(l:parts[1]) | return '' | endif
+  let [l:entry, l:jar] = l:parts
+  let l:cache = s:ClassCachePath(l:jar, l:entry)
+  let l:layer = filereadable(l:cache) ? 'cache' : ''   " 层0 缓存命中
+  if empty(l:layer)
+    let l:sjar = s:SourcesJarPath(l:jar)
+    let l:fetched = 0
+    if !filereadable(l:sjar)                          " 层2 mvn 在线拉取(函数内有提示)
+      if s:MvnFetchSources(l:jar)
+        let l:fetched = 1
+      else
+        let l:sjar = ''
+      endif
+    endif
+    if !empty(l:sjar) && filereadable(l:sjar)         " 层1 解包 sources jar
+      let l:src = s:ExtractFromJar(l:sjar, s:SourcesEntry(l:entry))
+      if !empty(l:src)
+        call s:WriteCache(l:cache, l:src)
+        let l:layer = l:fetched ? 'mvn' : 'sources'
+      endif
+    endif
+    if empty(l:layer)                                 " 层3 反编译兜底 (~1s)
+      redraw | echo 'MavenClasses: vineflower 反编译中...'
+      if s:VineflowerDecompile(l:jar, l:entry, l:cache)
+        let l:layer = 'vineflower'
+      endif
+    endif
+  endif
+  if empty(l:layer)
+    redraw | echoerr 'MavenClasses: 无法获取 ' . l:entry . ' (' . l:jar . ')'
+    return ''
+  endif
+  " &modified 时 :edit 抛 E37 (fzf.vim 的 s:callback 会接住并 echoerr 成红字
+  " 告警, 且目标文件开不出来), 此时改在新 split 打开, 不动用户未保存的 buffer
+  if &modified
+    execute 'split' fnameescape(l:cache)
+  else
+    execute 'edit' fnameescape(l:cache)
+  endif
+  let l:tag = {'cache': '缓存', 'sources': 'sources.jar', 'mvn': 'mvn拉取',
+        \ 'vineflower': '反编译'}[l:layer]
+  redraw | echo 'MavenClasses[' . l:tag . '] ' . l:cache
+  return l:layer
+endfunction
+
+" fzf#run 参数字典。注意: 本机新版 fzf 插件 (junegunn/fzf ≥0.48, vim runtime
+" 并入主仓库) 的 s:callback 只分发 sink/sink*/sinklist; 老版 fzf.vim 的
+" sinkfunction 键会被静默无视 → 选中后无任何反应。sink 直接传 Funcref 即可。
+function! s:MavenClassesRunDict() abort
+  let l:idx = expand(get(g:, 'mavenclasses_index', '~/.cache/m2classes.txt'))
+  return {
+        \ 'source': 'cat ' . shellescape(l:idx),
+        \ 'sink': function('s:MavenClassOpen'),
+        \ 'options': ['--prompt', 'MavenClasses> ',
+        \             '--delimiter', "\t", '--nth', '1',
+        \             '--header', 'enter 打开: 源码缓存→sources.jar→mvn拉取→反编译'],
+        \ 'down': '45%'}
+endfunction
+
+function! s:MavenClasses(bang) abort
+  let l:idx = expand(get(g:, 'mavenclasses_index', '~/.cache/m2classes.txt'))
+  if a:bang || !filereadable(l:idx)
+    call s:MavenIndexBuild()
+  endif
+  if !exists('*fzf#run')
+    echoerr 'fzf 插件未加载, 运行 make plugins'
+    return
+  endif
+  call fzf#run(s:MavenClassesRunDict())
+endfunction
+
+if executable('fzf') && executable('unzip') && executable('vineflower')
+  command! -bang MavenClasses call s:MavenClasses(<bang>0)
+  nnoremap <leader>jc :MavenClasses<CR>
+endif
+
+" ============================================================================
 " vim-fswitch (.cpp ↔ .h)
 " ============================================================================
 nmap <silent> <Leader>swi :FSHere<CR>

@@ -80,6 +80,7 @@ make install    # 或 sh init.sh（兼容入口）
 | `<F8>` | 切换 Tagbar 符号大纲 |
 | `<C-p>` | fzf 模糊找文件 |
 | `<leader>rg` | fzf ripgrep 全文搜索 |
+| `<leader>jc` | fzf 检索 ~/.m2 依赖类（源码 jar → mvn 拉取 → vineflower 反编译） |
 | `<leader><tab>` | UltiSnips 展开片段 / 跳到下一占位符 |
 | `<leader>ai` | 打开 Claude Code 终端（AI coding agent） |
 | `<C-o>` | 跳回上一个位置（jumplist back） |
