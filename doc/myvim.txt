@@ -107,7 +107,50 @@ Visual 选区 --------------------------------------------------------------
   :help quickref    vim 官方速查卡
 
 ==============================================================================
-2. 插件管理                                                    *myvim-plug*
+2. Shell 命令与脚本                                              *myvim-shell*
+   在 vim 中执行 shell 命令/脚本(纯 vim 原生,无插件)
+
+单条命令 ---------------------------------------------------------------------
+
+  :!{cmd}           执行 shell 命令,输出临时显示,回车返回 vim
+                    例 :!ls -l    :!mvn clean compile
+
+与当前文件交互 ------------------------------------------------------------
+
+  % 代表当前文件名:
+  :!python %        用 python 跑当前文件
+  :!javac %         编译当前文件
+  :!./%             执行当前脚本(需可执行权限)
+
+输出进 buffer -------------------------------------------------------------
+
+  :r !{cmd}         把命令输出插入光标处
+                    例 :r !date    :r !git log --oneline -5
+
+按行过滤 ---------------------------------------------------------------------
+
+  :{range}!{cmd}    把指定行送给命令,用其输出替换
+                    例 :5,10!sort      排序 5-10 行
+                    :'<,'>!jq .       格式化选中 JSON
+                    (visual 选区后按 : 自动带 :'<,'> 范围)
+
+交互式终端 ---------------------------------------------------------------
+
+  :term {cmd}       分屏开交互式终端(:terminal)
+  Ctrl-w N          切到 terminal-normal 模式,可滚动/移动光标
+  i                 回到终端输入模式
+  gF                光标停在 "文件:行号" 文本上,直接打开该文件并跳转
+                    (建议 set path+=./** 并让 vim 的 cwd 在项目根)
+  :sh               临时进入子 shell,exit 返回 vim,原状态不丢
+
+编译与错误跳转 ------------------------------------------------------------
+
+  :make             跑 'makeprg'(默认 make),编译错误解析进 quickfix
+  :copen            打开 quickfix 窗口,选中条目回车跳到出错行
+  :cw               仅当存在错误时打开 quickfix
+
+==============================================================================
+3. 插件管理                                                    *myvim-plug*
 
 vim-plug            插件管理器
   :PlugInstall      安装 .vimrc 中声明的插件
@@ -116,16 +159,16 @@ vim-plug            插件管理器
   :PlugStatus       查看插件状态
 
 ==============================================================================
-3. 补全与片段                                                *myvim-complete*
+4. 补全与片段                                                *myvim-complete*
 
-（语义补全/跳转由 vim-lsp 提供，详见 §8）
+（语义补全/跳转由 vim-lsp 提供，详见 §10）
 UltiSnips           代码片段引擎（需 python3，否则不声明）
   <leader><tab>     展开片段 / 跳到下一占位符
   <leader><s-tab>   跳到上一占位符
 vim-snippets        片段库
 
 ==============================================================================
-4. 文件与跳转                                              *myvim-navigation*
+5. 文件与跳转                                              *myvim-navigation*
 
 NERDTree            文件树（<C-n> 开关），显示隐藏文件
 nerdtree-git-plugin 文件树中显示 git 状态图标
@@ -137,7 +180,7 @@ vim-fswitch         <leader>swi 在 .cpp/.h 间切换
 vim-gutentags       后台自动维护 ctags（缓存于 ~/.cache/tags）
 
 ==============================================================================
-5. Git                                                          *myvim-git*
+6. Git                                                          *myvim-git*
 
 vim-fugitive        vim 内 Git
   :Git blame        逐行 blame
@@ -145,7 +188,7 @@ vim-fugitive        vim 内 Git
   :Git log          日志
 
 ==============================================================================
-6. 编辑增强                                                 *myvim-editing*
+7. 编辑增强                                                 *myvim-editing*
 
 auto-pairs          括号/引号自动配对（替代旧自研函数）
 nerdcommenter       注释开关（<leader>c<space> 切换注释）
@@ -154,7 +197,7 @@ tabular             对齐（:Tab /字符）
 vim-surround 未装；自动配对由 auto-pairs 负责
 
 ==============================================================================
-7. 语言支持                                               *myvim-languages*
+8. 语言支持                                               *myvim-languages*
 
 vim-cpp-enhanced-highlight   C++ 增强高亮
 pangloss/vim-javascript      JS 语法高亮/缩进（懒加载，编辑 .js 时才加载）
@@ -168,7 +211,7 @@ vim-go                       Go 开发集成（编辑 .go 时加载 ftplugin）
   :GoDef                      跳转定义（gopls）
 vim-markdown                 Markdown 高亮/折叠（懒加载）
 vim-instant-markdown         浏览器实时预览（需 instant-markdown-d，懒加载）
-Java (内置 syntax + vim-lsp/jdtls, 见 §9)
+Java (内置 syntax + vim-lsp/jdtls, 见 §10)
   <leader>jc       :MavenClasses fzf 检索 ~/.m2 全部依赖 jar 里的类
                    打开链: 缓存(~/.cache/decomp) → 本地 sources.jar
                    → mvn dependency:get 在线拉取(走 settings.xml 镜像)
@@ -176,7 +219,7 @@ Java (内置 syntax + vim-lsp/jdtls, 见 §9)
                    需 brew install fzf vineflower maven (unzip 系统自带)
 
 ==============================================================================
-8. 界面与格式化                                                 *myvim-ui*
+9. 界面与格式化                                                 *myvim-ui*
 
 vim-airline         状态栏 + tabline
 vim-indent-guides   缩进参考线（启动即启用，从第 2 级开始）
@@ -187,7 +230,7 @@ vim-codefmt         保存时自动格式化
 vim-maktaba + vim-glaive  codefmt 的依赖框架
 
 ==============================================================================
-9. LSP (vim-lsp)                                              *myvim-lsp*
+10. LSP (vim-lsp)                                              *myvim-lsp*
 
 vim-lsp             LSP 客户端（替代 YCM，无需编译）
 asyncomplete.vim    补全 popup 框架
@@ -213,7 +256,7 @@ asyncomplete-lsp.vim LSP↔asyncomplete 桥接（监听 User lsp_server_init 自
 LSP servers 与格式化器由 `make coding` 安装，详见 README.md。
 
 ==============================================================================
-10. AI Coding (Claude Code)                                       *myvim-ai*
+11. AI Coding (Claude Code)                                       *myvim-ai*
 
 Claude Code CLI 集成（需 npm install -g @anthropic-ai/claude-code）
 用 <leader>a* 前缀避开 NERDCommenter 的 <leader>c* 命名空间。
