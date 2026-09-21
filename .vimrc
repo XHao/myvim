@@ -104,9 +104,16 @@ augroup lsp_setup
     \ name: 'gopls',
     \ cmd: ['gopls', 'serve'],
     \ allowlist: ['go', 'gomod', 'gowork']})
+  " jdtls: 挂 lombok agent(1.18.48, ~/.vim/lombok.jar, make coding 自动下载), JVM 跟随 brew 默认(jdt.ls 需>=21,
+  " 未来 JDK 升级致 jdt.ls 启动异常时再补 --java-executable 钉版本),
+  " 显式 -data 按启动目录全路径隔离 workspace(默认按目录名哈希, 同名工程会撞), root_uri 向上找最近 pom.xml
   autocmd User lsp_setup call lsp#register_server(#{
     \ name: 'jdtls',
-    \ cmd: ['jdtls'],
+    \ cmd: ['jdtls',
+    \   '--jvm-arg=-javaagent:' . expand('~/.vim/lombok.jar'),
+    \   '-data', expand('~/.cache/jdtls-ws/') . substitute(getcwd(), '/', '%', 'g')],
+    \ root_uri: {-> lsp#utils#path_to_uri(
+    \   lsp#utils#find_nearest_parent_file_directory(lsp#utils#get_buffer_path(), 'pom.xml'))},
     \ allowlist: ['java']})
 augroup END
 

@@ -54,6 +54,19 @@ install_jdtls() {
   brew install jdtls && ok "jdtls 安装完成" || warn "jdtls 安装失败 → brew install jdtls"
 }
 
+# lombok jar（jdtls 的 javaagent，.vimrc 引用 ~/.vim/lombok.jar，已被 .gitignore 忽略）
+install_lombok() {
+  local ver=1.18.48
+  [ -s "$HOME/.vim/lombok.jar" ] && { ok "lombok ($ver) 已就位，跳过"; return 0; }
+  info "下载 lombok $ver (jdtls javaagent, 走 Maven Central)..."
+  # 先下 .part 再 mv，避免半截文件让下次幂等检查误判已装
+  curl -fsSL "https://repo1.maven.org/maven2/org/projectlombok/lombok/$ver/lombok-$ver.jar" \
+    -o "$HOME/.vim/lombok.jar.part" \
+    && mv "$HOME/.vim/lombok.jar.part" "$HOME/.vim/lombok.jar" \
+    && ok "lombok 安装完成" \
+    || { rm -f "$HOME/.vim/lombok.jar.part"; warn "lombok 下载失败 → 检查 repo1.maven.org 可达性"; }
+}
+
 # 格式化器
 install_clang_format() {
   have clang-format && { ok "clang-format 已安装，跳过"; return 0; }
@@ -80,6 +93,7 @@ install_prettier() {
 install_pyright
 install_gopls
 install_jdtls
+install_lombok
 install_clang_format
 install_black
 install_google_java_format

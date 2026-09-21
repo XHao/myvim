@@ -4,6 +4,7 @@ plugged/
 */.DS_Store
 *.bak
 *.bk
+lombok.jar
 ftdetect/
 ftplugin/
 plugin/
