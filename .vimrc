@@ -179,7 +179,9 @@ function! s:nerdtree_hide_gitignored() abort
   let l:root = fnamemodify(getcwd(), ':p:h')
   let l:out = systemlist('git -C ' . shellescape(l:root)
         \ . ' ls-files -o -i --exclude-standard --directory 2>/dev/null')
-  let l:pats = []
+  " 种子: .git 仓库内部件——git 对它整体跳过不走 ignore 规则，ShowHidden=1
+  " 时会露出来（dotfiles 仓需要 ShowHidden 看指缀文件，.git 是唯一该藏的）
+  let l:pats = ['\.git$']
   for l:f in filter(copy(l:out), 'v:val !~ "^\\s*$"')
     " --directory 输出形如 target/、node_modules/；去尾斜杠做整名匹配
     call add(l:pats, '^' . escape(substitute(l:f, '/$', '', ''), '.*[]~^$\') . '$')
