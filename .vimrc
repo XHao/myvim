@@ -150,6 +150,14 @@ nnoremap <leader>ds   :LspDocumentSymbol<CR>
 nnoremap <leader>ws   :LspWorkspaceSymbol<CR>
 
 " ============================================================================
+" Git (vim-fugitive, 映射 \gd 与 LSP 的裸 gd 无冲突)
+" ============================================================================
+" \gd 当前文件 vs 暂存区, 垂直对照分屏 (等价 git diff)
+" 变体手敲: :Gvdiffsplit HEAD → vs 上次提交; 退出关 fugitive 窗格即可,
+" ]c/[c 跳 hunk, dp/do 把改动推到对侧/拉回本侧 (vim 原生 diff 键)
+nnoremap <leader>gd :Gvdiffsplit<CR>
+
+" ============================================================================
 " 代码格式化 (vim-codefmt + clang-format)
 " ============================================================================
 augroup autoformat_settings
