@@ -165,11 +165,27 @@ let g:NERDTreeDirArrowCollapsible = '▾'
 augroup NERDTree_autocmds
   autocmd!
   autocmd StdinReadPre * let s:std_in=1
-  " 启动时若无文件参数, 自动开 NERDTree
-  autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
+  " 启动时若无文件参数, 自动开 NERDTree（先算 gitignore 隐藏表）
+  autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | call s:nerdtree_hide_gitignored() | NERDTree | endif
   " 若 NERDTree 是最后一个窗口, 自动退出 vim
   autocmd BufEnter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 augroup END
+
+" gitignored 文件/目录不进树：构建产物/jar/plugged 与源码平铺是噪音；
+" nerdtree-git-plugin 只管标记不管隐藏（ShowIgnored 也只是加个标记字符），
+" 故按仓库根跑 git ls-files 生成 NERDTreeIgnore。局限：NERDTreeIgnore 只认
+" 文件名不认路径，同名异路径文件会被连带隐藏；非 git 目录得到空表（即默认）
+function! s:nerdtree_hide_gitignored() abort
+  let l:root = fnamemodify(getcwd(), ':p:h')
+  let l:out = systemlist('git -C ' . shellescape(l:root)
+        \ . ' ls-files -o -i --exclude-standard --directory 2>/dev/null')
+  let l:pats = []
+  for l:f in filter(copy(l:out), 'v:val !~ "^\\s*$"')
+    " --directory 输出形如 target/、node_modules/；去尾斜杠做整名匹配
+    call add(l:pats, '^' . escape(substitute(l:f, '/$', '', ''), '.*[]~^$\') . '$')
+  endfor
+  let g:NERDTreeIgnore = l:pats
+endfunction
 let g:NERDTreeGitStatusIndicatorMapCustom = {
     \ "Modified"  : "✹",
     \ "Staged"    : "✚",
@@ -181,7 +197,7 @@ let g:NERDTreeGitStatusIndicatorMapCustom = {
     \ "Clean"     : "✔︎",
     \ "Unknown"   : "?"
     \ }
-nmap <C-n> :NERDTreeToggle<CR>
+nmap <C-n> :call <SID>nerdtree_hide_gitignored()<CR>:NERDTreeToggle<CR>
 
 " ============================================================================
 " Tagbar (符号大纲)
