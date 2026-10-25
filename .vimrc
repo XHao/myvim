@@ -83,7 +83,7 @@ set termguicolors
 let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
 let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
 let g:everforest_background = 'soft'
-colorscheme everforest               " 必须在 plug#end() 后,主题才在 rtp 中
+silent! colorscheme everforest               " 必须在 plug#end() 后,主题才在 rtp 中
 let g:airline_theme='everforest'    " 状态栏与主题配套
 
 " ============================================================================
