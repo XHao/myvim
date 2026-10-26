@@ -51,13 +51,14 @@ call s:check_cmd('LspDefinition',  'vim-lsp 未加载？运行 make plugins')
 call s:check_cmd('LspCodeAction',  'vim-lsp 未加载？运行 make plugins')
 call s:check_cmd('LspHover',       'vim-lsp 未加载？运行 make plugins')
 " vimspector 命令是前缀歧义组(:Vimspector 匹配多个子命令, exists()==3), 用唯一的
-" :VimspectorReset 检测; CodeLLDB gadget 是下载物(plugged/ 不进 git), 缺它 F5
-" 启动时找不到 adapter → WARN 提示首装机器补装
+" :VimspectorReset 检测; adapter 走系统 lldb-dap(不装 CodeLLDB gadget — vimspector
+" 钉的 v1.12.1 在 macOS 27 起不了进程), 项目 .vimspector.json 内联 ["xcrun","lldb-dap"],
+" 缺它 F5 启动时找不到 adapter → WARN 提示装 Xcode/CLT
 call s:check_cmd('VimspectorReset', 'vimspector 未装上？运行 make plugins')
-if executable(expand('~/.vim/plugged/vimspector/gadgets/macos/CodeLLDB/adapter/codelldb'))
-  call s:report('PASS', 'CodeLLDB gadget 已安装', '')
+if !empty(system('xcrun --find lldb-dap 2>/dev/null'))
+  call s:report('PASS', 'lldb-dap (系统) 可用', '')
 else
-  call s:report('WARN', 'CodeLLDB gadget', 'vim 里 :VimspectorInstall CodeLLDB')
+  call s:report('WARN', 'lldb-dap', '装 Xcode 或 xcode-select --install')
 endif
 " vim-go 的 :GoBuild 等命令在 ftplugin 中,仅 FileType go 触发时注册;
 " 无头模式不打开 .go 文件则命令不存在,改用 plugin/go.vim 设置的全局变量检测

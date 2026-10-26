@@ -74,7 +74,7 @@ Plug 'joshdick/onedark.vim'       " 备用: :colorscheme onedark
 Plug 'tomasr/molokai'              " 备用: :colorscheme molokai
 
 " 调试
-Plug 'puremourning/vimspector'     " DAP 调试前端 (CodeLLDB gadget, 见文末 vimspector 节)
+Plug 'puremourning/vimspector'     " DAP 调试前端 (adapter 走系统 lldb-dap, 见文末 vimspector 节)
 
 call plug#end()
 filetype plugin indent on
@@ -606,9 +606,11 @@ endif
 nnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
 
 " ============================================================================
-" vimspector (DAP 调试前端, 本地 C 程序走 CodeLLDB → 系统 lldb)
+" vimspector (DAP 调试前端, 本地 C 程序走系统 lldb-dap)
 " ============================================================================
-" gadget 安装: vim 里 :VimspectorInstall CodeLLDB (或 :VimspectorInstall 更新全部)
+" 不装 CodeLLDB gadget: vimspector 钉的 v1.12.1 在 macOS 27 起不了进程 (launch 挂死/
+" 适配器 exit 255 → F5 报 Initialize Failed, 2026-10 实测); adapter 用系统 lldb-dap,
+" 各项目 .vimspector.json 内联定义为 ["xcrun", "lldb-dap"] (Xcode/CLT 任装其一即可)
 " 项目配置: 仓库根 .vimspector.json (每个二进制一个 configuration)
 " 启动: 打开源文件 → <F5> 选 configuration; 布局右侧=变量/Watch/调用栈, 底部=程序输出
 " 收尾: :VimspectorReset 关掉全部调试窗格
