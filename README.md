@@ -146,17 +146,19 @@ LSP 启用后，**打字时自动弹补全 popup**（asyncomplete-lsp 监听 LSP
 
 `<leader>ai` / `<leader>ab` / `<leader>aq` 集成 Claude Code CLI（需 `npm install -g @anthropic-ai/claude-code` 或自定义启动器）。
 
-默认交互启动 `zsh -ic claude`、pipe 用 `claude`，可通过 `g:claude_cmd` / `g:claude_pipe_cmd` 变量在 `call plug#begin()` 之前改写：
+默认交互启动 `zsh -ic claude`、pipe 用 `claude`、`<leader>ai` 宽屏竖开阈值 `g:claude_vsplit_min`（默认 160 列），均可通过 `g:claude_cmd` / `g:claude_pipe_cmd` / `g:claude_vsplit_min` 在 `call plug#begin()` 之前改写：
 
 ```vim
 let g:claude_cmd = 'claude'                    " 直调 claude 二进制
 let g:claude_cmd = 'zsh -ic claude'            " 复用 zsh 函数（加载 .zshrc）
-let g:claude_pipe_cmd = 'mc'                   " pipe 模式用裸 mc
+let g:claude_pipe_cmd = 'claude'               " pipe 模式用裸 claude
 ```
+
+注：默认 `zsh -ic claude` 依赖 zsh（`-i` 用于加载 .zshrc 里的函数/别名）；无 zsh 环境请改设 `g:claude_cmd = 'claude'` 直调二进制。
 
 | 键 | 模式 | 作用 |
 |---|---|---|
-| `<leader>ai` | normal | 底部 20 行 split 打开 Claude Code 终端（交互式） |
+| `<leader>ai` | normal | 打开 Claude Code 终端（交互式；宽屏右侧 vsplit / 窄屏底部 20 行 split） |
 | `<leader>ab` | visual | 选区 → Claude 改写（输出原地替换 buffer，失败可 `u` 撤销） |
 | `<leader>aq` | visual | 选区 → Claude 查询（输出到终端，不改 buffer） |
 
