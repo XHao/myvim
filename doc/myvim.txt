@@ -276,4 +276,29 @@ Claude Code CLI 集成（需 npm install -g @anthropic-ai/claude-code）
   - 选区查询解释 → <leader>aq
 
 ==============================================================================
+12. 调试 (vimspector)                                          *myvim-debug*
+
+vimspector         DAP 调试前端（CodeLLDB gadget → 系统 lldb，无需 gdb）
+  项目配置         仓库根 .vimspector.json，每个可执行文件一个 configuration
+  :Vimspector      启动调试会话（等价 <F5>），多个配置时弹出选择菜单
+  :VimspectorReset 关闭全部调试窗格并结束会话
+  :VimspectorInstall CodeLLDB   安装/更新 gadget（换机器后执行一次）
+
+  <F5>             启动 / 继续运行
+  <F9>             光标行断点开关
+  <F10>            单步跳过（step over）
+  <F11>            单步进入（step into）
+  <leader>db       断点开关（<F9> 等价）
+  <leader>dc       启动 / 继续（<F5> 等价）
+  <leader>du       单步跳出（Apple Terminal 传不出 Shift-F11）
+  <leader>dr       重启调试会话
+  <leader>dq       结束调试会话
+  <leader>dj / dk  调用栈帧 下移 / 上移
+  <leader>de       visual: 选区悬浮求值
+
+会话布局：右侧 = 变量 / Watch / 调用栈，底部 = 程序 stdout 与 DAP 控制台。
+不用 g:vimspector_enable_mappings —— VISUAL_STUDIO 组占 <F8>（Tagbar）；
+Shift-Fx 在 Apple Terminal 传不出，停止/重启/跳出走 <leader>d*。
+
+==============================================================================
  vim:tw=78:ts=8:ft=help:norl:

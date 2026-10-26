@@ -73,6 +73,9 @@ Plug 'sainnhe/everforest'          " 首选配色
 Plug 'joshdick/onedark.vim'       " 备用: :colorscheme onedark
 Plug 'tomasr/molokai'              " 备用: :colorscheme molokai
 
+" 调试
+Plug 'puremourning/vimspector'     " DAP 调试前端 (CodeLLDB gadget, 见文末 vimspector 节)
+
 call plug#end()
 filetype plugin indent on
 syntax enable
@@ -601,3 +604,28 @@ endif
 " ============================================================================
 " <space> 在闭合 fold 上 zo 展开, 否则 zc 折叠
 nnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
+
+" ============================================================================
+" vimspector (DAP 调试前端, 本地 C 程序走 CodeLLDB → 系统 lldb)
+" ============================================================================
+" gadget 安装: vim 里 :VimspectorInstall CodeLLDB (或 :VimspectorInstall 更新全部)
+" 项目配置: 仓库根 .vimspector.json (每个二进制一个 configuration)
+" 启动: 打开源文件 → <F5> 选 configuration; 布局右侧=变量/Watch/调用栈, 底部=程序输出
+" 收尾: :VimspectorReset 关掉全部调试窗格
+" 不用 g:vimspector_enable_mappings — VISUAL_STUDIO 组占 F8, 会顶掉上面 Tagbar 的映射;
+" Apple Terminal 传不出 Shift-Fx, 停止/重启/跳出等一律用 <leader>d* 兜底:
+"   <F5> 启动/继续   <F9> 断点   <F10> 单步跳过   <F11> 单步进入
+"   <leader>dc 继续  <leader>db 断点  <leader>du 跳出  <leader>dr 重启
+"   <leader>dq 结束  <leader>dj/dk 栈帧下/上  v模式 <leader>de 选区求值
+nmap <F5>  <Plug>VimspectorContinue
+nmap <F9>  <Plug>VimspectorToggleBreakpoint
+nmap <F10> <Plug>VimspectorStepOver
+nmap <F11> <Plug>VimspectorStepInto
+nmap <leader>db <Plug>VimspectorToggleBreakpoint
+nmap <leader>dc <Plug>VimspectorContinue
+nmap <leader>du <Plug>VimspectorStepOut       " u = step oUt
+nmap <leader>dr <Plug>VimspectorRestart
+nmap <leader>dq <Plug>VimspectorStop          " q = quit 调试会话
+nmap <leader>dk <Plug>VimspectorUpFrame       " 调用栈上移
+nmap <leader>dj <Plug>VimspectorDownFrame     " 调用栈下移
+vmap <leader>de <Plug>VimspectorBalloonEval   " 选区 → 悬浮求值

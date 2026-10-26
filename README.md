@@ -83,6 +83,8 @@ make install    # 或 sh init.sh（兼容入口）
 | `<leader>jc` | fzf 检索 ~/.m2 依赖类（源码 jar → mvn 拉取 → vineflower 反编译） |
 | `<leader><tab>` | UltiSnips 展开片段 / 跳到下一占位符 |
 | `<leader>ai` | 打开 Claude Code 终端（AI coding agent） |
+| `<F5>` | 调试：启动 / 继续（vimspector，项目需有 .vimspector.json） |
+| `<F9>` | 调试：断点开关 |
 | `<C-o>` | 跳回上一个位置（jumplist back） |
 
 完整清单见 `:help myvim`。
@@ -100,6 +102,7 @@ make install    # 或 sh init.sh（兼容入口）
 | 编辑增强 | auto-pairs, nerdcommenter, tabular ⚡ |
 | 语言支持 | vim-cpp-enhanced-highlight ⚡, pangloss/vim-javascript ⚡, moll/vim-node ⚡, vim-markdown ⚡, vim-instant-markdown ⚡ |
 | 界面 / 格式化 | vim-airline, vim-indent-guides, vim-codefmt, vim-maktaba, vim-glaive, molokai（配色） |
+| 调试 | vimspector（CodeLLDB gadget 需单独装，见下） |
 
 带 * 的需 `vim +python3`（macOS 自带 vim 无，须 `brew install vim`）。`.vimrc` 中 `if has('python3')` 守卫会自动跳过未满足的声明，不影响其他插件。带 ⚡ 的按文件类型延迟加载。
 
@@ -122,6 +125,16 @@ make coding    # 装 pyright/gopls/jdtls LSP servers + clang-format/black/google
 `make coding` 幂等，已装的组件会跳过。完成后 `make verify` 中相关 `[WARN]` 全部转为 `[PASS]`。
 
 LSP 启用后，**打字时自动弹补全 popup**（asyncomplete-lsp 监听 LSP server 初始化事件自动注册 source）。
+
+### 调试 (vimspector + CodeLLDB)
+
+插件本体由 `make plugins` 安装；CodeLLDB gadget（lldb 的 DAP adapter）是下载物、不进 git，换机器后需在 vim 里执行一次：
+
+```
+:VimspectorInstall CodeLLDB
+```
+
+被调试项目在仓库根放 `.vimspector.json` 后，`<F5>` 选配置启动、`<F9>` 断点、`<F10>`/`<F11>` 单步、`<leader>dq` 结束。macOS 无 gdb，CodeLLDB 走系统 lldb。完整键表见 `:help myvim-debug`。
 
 ### [vim-instant-markdown](https://github.com/suan/vim-instant-markdown)
 
