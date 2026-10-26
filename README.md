@@ -146,7 +146,7 @@ LSP 启用后，**打字时自动弹补全 popup**（asyncomplete-lsp 监听 LSP
 
 `<leader>ai` / `<leader>ab` / `<leader>aq` 集成 Claude Code CLI（需 `npm install -g @anthropic-ai/claude-code` 或自定义启动器）。
 
-默认启动命令 `mc --code`，可通过 `g:claude_cmd` / `g:claude_pipe_cmd` 变量在 `call plug#begin()` 之前改写：
+默认交互启动 `zsh -ic claude`、pipe 用 `claude`，可通过 `g:claude_cmd` / `g:claude_pipe_cmd` 变量在 `call plug#begin()` 之前改写：
 
 ```vim
 let g:claude_cmd = 'claude'                    " 直调 claude 二进制
